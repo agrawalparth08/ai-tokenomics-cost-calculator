@@ -4,9 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>AI Cost Calculator · AI Tokenomics</title>
-<meta name="description" content="Price any AI feature before you build it. Plug in tokens, prices, and users to get your monthly AI bill, cost per user, and gross margin." />
-<meta property="og:title" content="AI Cost Calculator · price any AI feature before you build it" />
-<meta property="og:description" content="Tokens are the new cloud bill. Get your monthly AI cost, cost per user, and margin in one screen." />
+<meta name="description" content="The routing calculator from the Lerner Index video: see what your AI bill looks like frontier-for-everything vs. routed like a buyer. Plus a feature pricer: tokens, prices, users, margin." />
+<meta property="og:title" content="AI Cost Calculator · see your routing spread, then price any AI feature" />
+<meta property="og:description" content="Tokens are the new cloud bill. Most bills drop 40 to 85% when the easy majority is routed off the frontier. Run your own numbers." />
 <meta property="og:type" content="website" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -89,6 +89,24 @@
     border-radius:12px;padding:12px 14px;font-size:13px;margin-top:16px}
   /* lotus */
   .lotus{width:34px;height:34px;flex:none}
+  /* section headers + routing block */
+  .sect{display:flex;align-items:baseline;gap:12px;margin:38px 0 6px}
+  .sect .n{font-family:"Fraunces",serif;font-weight:600;font-size:15px;color:var(--cobalt-deep);background:rgba(47,91,234,.09);border:1px solid rgba(47,91,234,.18);border-radius:999px;padding:4px 12px;white-space:nowrap}
+  .sect h2{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(21px,2.6vw,28px);margin:0;letter-spacing:-.01em}
+  .sect p{margin:4px 0 18px;color:var(--muted);font-size:14.5px;max-width:640px}
+  .bill.mint{background:linear-gradient(170deg,var(--mint),var(--mint-deep))}
+  .compare-line{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-top:1px solid var(--border)}
+  .compare-line .lab{font-size:14px;color:var(--muted);font-weight:500}
+  .compare-line .val{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+  .layers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+  @media(max-width:560px){.layers{grid-template-columns:1fr}}
+  .layer{border:1px solid var(--border);border-radius:12px;padding:11px 13px;font-size:12.5px;line-height:1.45;color:var(--muted)}
+  .layer b{display:block;font-size:13px;color:var(--ink);margin-bottom:2px}
+  .layer.alarm{border-color:rgba(251,78,91,.35);background:rgba(251,78,91,.05)}
+  .layer.mint{border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.05)}
+  .watch{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:700;font-size:13.5px;color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:8px 16px;margin:2px 0 8px;transition:border-color .12s,box-shadow .12s,transform .12s}
+  .watch:hover{border-color:var(--cobalt);box-shadow:var(--shadow-sm);transform:translateY(-1px)}
+  .watch svg{width:16px;height:16px}
 </style>
 </head>
 <body>
@@ -113,7 +131,65 @@
   </header>
 
   <h1>The <span class="hl">AI Cost</span> Calculator</h1>
-  <p class="sub">Price any AI feature before you build it. Plug in your tokens, prices, and users, and it shows you the monthly bill, the cost per user, and your gross margin.</p>
+  <p class="sub">Two tools, no signup. First, the routing calculator from the Lerner Index video: see the spread between paying frontier prices for everything and routing like a buyer. Below it, the feature pricer: your monthly bill, cost per user, and gross margin for any AI feature.</p>
+
+  <!-- ============ PART 1 · ROUTING ============ -->
+  <div class="sect" id="routing">
+    <span class="n">Part 1</span>
+    <h2>The routing calculator</h2>
+  </div>
+  <p style="margin:4px 0 10px;color:var(--muted);font-size:14.5px;max-width:660px">One number, the Lerner Index, splits your traffic into two markets. Frontier reasoning sits near 1: a handful of sellers, high pricing power. Classify, extract, summarize sits near 0: dozens of good-enough models, and the seller loses pricing power the moment you can shop. Route each request to its layer and see what happens to the bill.</p>
+  <a class="watch" href="https://youtu.be/yW2uYTZcdWc" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="#FF0000"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+    Watch the 9-minute video this comes from
+  </a>
+
+  <div class="grid">
+    <!-- ROUTING INPUTS -->
+    <div>
+      <div class="card">
+        <h2>Your traffic</h2>
+        <div class="row"><label>Monthly token volume <small>input + output combined, in millions</small></label><div class="inp suf" data-suf="M"><input id="rVol" type="number" min="0" step="10" value="500"></div></div>
+        <div class="row"><label>Share that truly needs the frontier <small>hard reasoning, novel synthesis. Most teams find a fifth or less</small></label><div class="inp suf" data-suf="%"><input id="rShare" type="number" min="0" max="100" step="1" value="20"></div></div>
+        <p class="note">Don't know your split? Tag one day of real requests: could a mid-tier model have closed this? That day of logging is step 1 of the fix in the video.</p>
+      </div>
+      <div class="card">
+        <h2>Blended price per 1M tokens</h2>
+        <div class="row"><label>Frontier layer <small>blend of input + output rates at your mix</small></label><div class="inp pre"><input id="rpF" type="number" min="0" step="0.1" value="6.00"></div></div>
+        <div class="row"><label>Commodity layer <small>the good-enough tier, after shopping vendors</small></label><div class="inp pre"><input id="rpC" type="number" min="0" step="0.05" value="0.40"></div></div>
+        <p class="note">Defaults are illustrative: a Sonnet-class blend near <b>$6</b> vs. a Flash/nano-class blend near <b>$0.40</b>. The same open model is often priced 3 to 8x apart across vendors, so shop the commodity layer before you settle. Always verify live rates.</p>
+      </div>
+    </div>
+
+    <!-- ROUTING RESULTS -->
+    <div class="results">
+      <div class="bill mint">
+        <div class="k">Routed like a buyer</div>
+        <div class="big" id="rRouted">$0</div>
+        <div class="yr" id="rRoutedYr">$0 / year</div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <div class="compare-line" style="border-top:none"><span class="lab">Frontier for everything</span><span class="val coral" id="rAll">$0</span></div>
+        <div class="compare-line"><span class="lab">You keep, every month</span><span class="val mint" id="rSave">$0</span></div>
+        <div class="compare-line"><span class="lab">Bill drop</span><span class="val mint" id="rPct">0%</span></div>
+      </div>
+      <div class="card" style="margin-top:18px">
+        <h2 style="margin-bottom:10px">The two markets in one API call</h2>
+        <div class="layers">
+          <div class="layer alarm"><b>Frontier · Lerner near 1</b>Few sellers, hard to swap. Pay up here only where you must, and cap it.</div>
+          <div class="layer mint"><b>Commodity · Lerner near 0</b>Dozens of good-enough models. Compare, switch, push price toward cost.</div>
+        </div>
+        <p class="note" style="margin-top:10px">The fix, in order: <b>sort</b> a day of traffic, put a <b>router</b> in front, <b>shop</b> the commodity layer, set a hard <b>cap</b>, <b>quality-gate</b> the cheap path. Real bills drop 40 to 85% depending on your split.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PART 2 · FEATURE PRICER ============ -->
+  <div class="sect" id="feature">
+    <span class="n">Part 2</span>
+    <h2>Price any AI feature before you build it</h2>
+  </div>
+  <p style="margin:4px 0 18px;color:var(--muted);font-size:14.5px;max-width:640px">Plug in your tokens, prices, and users, and it shows you the monthly bill, the cost per user, and your gross margin.</p>
 
   <div class="grid">
     <!-- INPUTS -->
@@ -186,7 +262,7 @@
       </a>
     </div>
     <p class="credit">Made by <b>AI Tokenomics</b>. The real cost of AI, explained with numbers.</p>
-    <p class="math">The math: cost per request = (fresh input ÷ 1M × price) + (cached ÷ 1M × cached price) + (output ÷ 1M × price) + tool cost, all × (1 + retry rate). Monthly bill = cost per request × requests per user × users.</p>
+    <p class="math">Routing math: frontier-for-everything = volume × frontier price. Routed = volume × (frontier share × frontier price + commodity share × commodity price). Feature math: cost per request = (fresh input ÷ 1M × price) + (cached ÷ 1M × cached price) + (output ÷ 1M × price) + tool cost, all × (1 + retry rate). Monthly bill = cost per request × requests per user × users.</p>
   </footer>
 </div>
 
@@ -216,6 +292,7 @@
 
   const num=id=>{const v=parseFloat($(id).value);return isFinite(v)&&v>0?v:0;};
   const money=v=> v>=1000 ? "$"+v.toLocaleString(undefined,{maximumFractionDigits:0})
+              : v>=100 ? "$"+v.toFixed(0)
               : v>=1 ? "$"+v.toFixed(2)
               : "$"+v.toFixed(v>=0.01?3:4);
   const COL={fresh:"#2F5BEA",cached:"#10B981",output:"#E0A12B",tool:"#FB4E5B"};
@@ -258,8 +335,23 @@
       `<span><i style="background:${COL[k]}"></i>${k} ${(v/tot*100).toFixed(0)}%</span>`).join("")
       + ` <span><i style="background:#5B6680"></i>+${(num("retry")*100).toFixed(0)}% retries</span>`;
   }
-  document.querySelectorAll("input").forEach(el=>el.addEventListener("input",calc));
-  calc();
+  // Part 1: routing spread. Volume is in millions of tokens, prices are per 1M,
+  // so dollars = volume × price directly.
+  function rcalc(){
+    const vol=num("rVol");
+    const share=Math.min(num("rShare"),100)/100;
+    const pF=num("rpF"), pC=num("rpC");
+    const all=vol*pF;
+    const routed=vol*(share*pF+(1-share)*pC);
+    const save=Math.max(all-routed,0);
+    $("rAll").textContent=money(all)+" / mo";
+    $("rRouted").textContent=money(routed);
+    $("rRoutedYr").textContent=money(routed*12)+" / year";
+    $("rSave").textContent=money(save);
+    $("rPct").textContent=(all>0?(save/all*100):0).toFixed(0)+"% lower";
+  }
+  document.querySelectorAll("input").forEach(el=>el.addEventListener("input",()=>{calc();rcalc();}));
+  calc();rcalc();
 </script>
 </body>
 </html>
