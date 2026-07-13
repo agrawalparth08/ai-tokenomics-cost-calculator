@@ -3,355 +3,300 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>AI Cost Calculator · AI Tokenomics</title>
-<meta name="description" content="The routing calculator from the Lerner Index video: see what your AI bill looks like frontier-for-everything vs. routed like a buyer. Plus a feature pricer: tokens, prices, users, margin." />
-<meta property="og:title" content="AI Cost Calculator · see your routing spread, then price any AI feature" />
-<meta property="og:description" content="Tokens are the new cloud bill. Most bills drop 40 to 85% when the easy majority is routed off the frontier. Run your own numbers." />
+<title>AI Margin Calculator · AI Tokenomics</title>
+<meta name="description" content="Flat pricing hides a trap: your heaviest users can quietly cost you more than they pay. Enter your cost per outcome and flat price, and see the margin on light, median, and power users — plus the break-even usage where a customer starts losing you money." />
+<meta property="og:title" content="AI Margin Calculator · your best customers can be your biggest AI loss" />
+<meta property="og:description" content="One flat price, three very different users. See per-user margin and the break-even outcomes where a customer flips from profit to loss." />
 <meta property="og:type" content="website" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet">
 <style>
   :root{
     --cobalt:#2F5BEA; --cobalt-deep:#1E40C8; --mint:#10B981; --mint-deep:#0E9F70;
-    --gold:#E0A12B; --coral:#FB4E5B; --paper:#FBFCFE; --surface:#FFFFFF;
-    --ink:#131C30; --muted:#5B6680; --border:#E6EAF2; --grid:rgba(47,91,234,.05);
+    --gold:#E0A12B; --coral:#FB4E5B; --coral-deep:#E23947;
+    --paper:#FBFCFE; --surface:#FFFFFF; --ink:#131C30; --muted:#5B6680;
+    --border:#E6EAF2; --grid:rgba(47,91,234,.05);
     --shadow:0 18px 50px rgba(19,28,48,.10); --shadow-sm:0 6px 18px rgba(19,28,48,.06);
     --radius:18px;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Hanken Grotesk",system-ui,sans-serif;
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Hanken Grotesk",system-ui,-apple-system,sans-serif;
     background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
-    background-size:60px 60px;-webkit-font-smoothing:antialiased;}
-  .wrap{max-width:1120px;margin:0 auto;padding:28px 22px 60px}
+    background-size:60px 60px;-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .wrap{max-width:1080px;margin:0 auto;padding:26px 22px 56px}
+  a{color:inherit}
+
   /* header */
-  header{display:flex;align-items:center;gap:14px;margin:8px 0 6px}
-  .brand{font-weight:800;font-size:20px;letter-spacing:-.01em}
+  header{display:flex;align-items:center;gap:14px;margin:6px 0 6px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.01em}
+  .mark{width:30px;height:30px;flex:0 0 auto}
   .brand .ai{color:var(--cobalt)}
   .pill{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--cobalt-deep);background:rgba(47,91,234,.09);
-    border:1px solid rgba(47,91,234,.18);padding:7px 14px;border-radius:999px}
-  h1{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(28px,4vw,44px);line-height:1.05;margin:18px 0 8px;letter-spacing:-.01em}
+    border:1px solid rgba(47,91,234,.18);padding:7px 14px;border-radius:999px;white-space:nowrap}
+
+  h1{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(29px,4.6vw,46px);line-height:1.03;margin:20px 0 10px;letter-spacing:-.015em;max-width:14ch}
   h1 .hl{color:var(--cobalt)}
-  .sub{color:var(--muted);font-size:16px;max-width:620px;margin:0 0 26px}
+  .sub{color:var(--muted);font-size:clamp(15px,2vw,17px);max-width:640px;margin:0 0 28px}
+
   /* layout */
-  .grid{display:grid;grid-template-columns:1fr 380px;gap:26px;align-items:start}
-  @media(max-width:860px){.grid{grid-template-columns:1fr}}
+  .grid{display:grid;grid-template-columns:360px 1fr;gap:24px;align-items:start}
+  @media(max-width:840px){.grid{grid-template-columns:1fr}}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:22px}
-  .card h2{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 16px}
-  .card+.card{margin-top:18px}
+  .card h2{font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+  .card .h2sub{font-size:13px;color:var(--muted);margin:0 0 16px}
+
   /* fields */
-  .row{display:grid;grid-template-columns:1fr 130px;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--border)}
-  .row:first-of-type{border-top:none}
-  .row label{font-size:14.5px;font-weight:500}
-  .row label small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:1px}
-  .inp{position:relative}
-  .inp input{width:100%;font-family:inherit;font-size:15px;font-weight:700;text-align:right;color:var(--ink);
+  .row{display:grid;grid-template-columns:1fr 128px;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--border)}
+  .row:first-of-type{border-top:none;padding-top:2px}
+  .row label{font-size:14.5px;font-weight:600}
+  .row label small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:2px;line-height:1.35}
+  .inp{position:relative;min-width:0}
+  .inp input{width:100%;min-width:0;font-family:inherit;font-size:15px;font-weight:700;text-align:right;color:var(--ink);
     background:var(--paper);border:1.5px solid var(--border);border-radius:10px;padding:9px 11px;outline:none;
     font-variant-numeric:tabular-nums;transition:border-color .12s,box-shadow .12s}
   .inp input:focus{border-color:var(--cobalt);box-shadow:0 0 0 3px rgba(47,91,234,.14)}
-  .inp.pre input{padding-left:24px;text-align:right}
+  .inp.pre input{padding-left:22px}
   .inp.pre::before{content:"$";position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700;font-size:14px}
-  .inp.suf input{padding-right:34px}
-  .inp.suf::after{content:attr(data-suf);position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700;font-size:13px}
-  select{width:100%;font-family:inherit;font-size:14.5px;font-weight:600;color:var(--ink);background:var(--paper);
-    border:1.5px solid var(--border);border-radius:10px;padding:10px 12px;outline:none;cursor:pointer}
-  select:focus{border-color:var(--cobalt)}
-  .presetrow{display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:4px}
-  .note{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.5}
-  .note b{color:var(--ink)}
+
+  .tierhead{font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:20px 0 2px}
+  .tier-in{display:grid;grid-template-columns:1fr 92px 128px;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--border)}
+  .tier-in:first-of-type{border-top:none}
+  .tier-in input.tname{font-weight:700;text-align:left;font-size:14px}
+  .tier-in .tcap{font-size:11.5px;color:var(--muted);text-align:right;font-weight:600}
+  .inp.suf input{padding-right:30px}
+  .inp.suf::after{content:attr(data-suf);position:absolute;right:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700;font-size:11px}
+
+  /* break-even banner */
+  .be{grid-column:1/-1;background:linear-gradient(120deg,#0f1830,#182a5e);color:#fff;border-radius:var(--radius);
+    padding:22px 24px;box-shadow:var(--shadow);display:flex;flex-wrap:wrap;align-items:center;gap:12px 30px;margin-bottom:2px}
+  .be .beMain{display:flex;flex-direction:column;gap:3px}
+  .be .beRow{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+  .be .beLabel{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#9fb4ff}
+  .be .beNum{font-family:"Fraunces",serif;font-weight:700;font-size:clamp(34px,6vw,52px);line-height:1;color:#fff;font-variant-numeric:tabular-nums}
+  .be .beUnit{font-size:14px;font-weight:700;color:#cdd8ff}
+  .be .beCaption{flex:1 1 240px;font-size:14px;color:#c7d2f0;line-height:1.45;min-width:200px}
+  .be .beCaption b{color:#fff;font-weight:700}
+
   /* results */
-  .results{position:sticky;top:18px}
-  .bill{background:linear-gradient(170deg,var(--cobalt),var(--cobalt-deep));color:#fff;border-radius:var(--radius);
-    padding:24px;box-shadow:var(--shadow)}
-  .bill .k{font-size:12.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;opacity:.85}
-  .bill .big{font-family:"Hanken Grotesk";font-weight:800;font-size:clamp(38px,7vw,52px);line-height:1;margin:8px 0 2px;font-variant-numeric:tabular-nums}
-  .bill .yr{font-size:14px;opacity:.9;font-weight:600}
-  .stat{display:flex;justify-content:space-between;align-items:baseline;padding:13px 0;border-top:1px solid var(--border)}
-  .stat:first-child{border-top:none}
-  .stat .lab{font-size:14px;color:var(--muted);font-weight:500}
-  .stat .val{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
-  .val.mint{color:var(--mint-deep)} .val.coral{color:var(--coral)} .val.gold{color:var(--gold)} .val.ink{color:var(--ink)}
-  /* breakdown */
-  .bar{display:flex;height:14px;border-radius:8px;overflow:hidden;margin:6px 0 12px;background:var(--border)}
-  .bar span{height:100%}
-  .legend{display:flex;flex-wrap:wrap;gap:10px 16px;font-size:12.5px;color:var(--muted)}
-  .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
-  footer{margin-top:34px;color:var(--muted);font-size:13px;line-height:1.6}
-  footer a{color:var(--cobalt-deep);font-weight:600}
-  .social{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
-  .social a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--ink);font-weight:700;font-size:13.5px;
-    background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:8px 15px;transition:border-color .12s,transform .12s,box-shadow .12s}
-  .social a:hover{border-color:var(--cobalt);box-shadow:var(--shadow-sm);transform:translateY(-1px)}
-  .social svg{width:17px;height:17px;display:block}
-  footer .credit{margin:0 0 6px}
-  footer .math{margin:0;font-size:12px;color:var(--muted);opacity:.85}
-  .verify{background:rgba(224,161,43,.10);border:1px solid rgba(224,161,43,.3);color:#8a5e10;
-    border-radius:12px;padding:12px 14px;font-size:13px;margin-top:16px}
-  /* lotus */
-  .lotus{width:34px;height:34px;flex:none}
-  /* section headers + routing block */
-  .sect{display:flex;align-items:baseline;gap:12px;margin:38px 0 6px}
-  .sect .n{font-family:"Fraunces",serif;font-weight:600;font-size:15px;color:var(--cobalt-deep);background:rgba(47,91,234,.09);border:1px solid rgba(47,91,234,.18);border-radius:999px;padding:4px 12px;white-space:nowrap}
-  .sect h2{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(21px,2.6vw,28px);margin:0;letter-spacing:-.01em}
-  .sect p{margin:4px 0 18px;color:var(--muted);font-size:14.5px;max-width:640px}
-  .bill.mint{background:linear-gradient(170deg,var(--mint),var(--mint-deep))}
-  .compare-line{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;border-top:1px solid var(--border)}
-  .compare-line .lab{font-size:14px;color:var(--muted);font-weight:500}
-  .compare-line .val{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
-  .layers{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
-  @media(max-width:560px){.layers{grid-template-columns:1fr}}
-  .layer{border:1px solid var(--border);border-radius:12px;padding:11px 13px;font-size:12.5px;line-height:1.45;color:var(--muted)}
-  .layer b{display:block;font-size:13px;color:var(--ink);margin-bottom:2px}
-  .layer.alarm{border-color:rgba(251,78,91,.35);background:rgba(251,78,91,.05)}
-  .layer.mint{border-color:rgba(16,185,129,.35);background:rgba(16,185,129,.05)}
-  .watch{display:inline-flex;align-items:center;gap:9px;text-decoration:none;font-weight:700;font-size:13.5px;color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:8px 16px;margin:2px 0 8px;transition:border-color .12s,box-shadow .12s,transform .12s}
-  .watch:hover{border-color:var(--cobalt);box-shadow:var(--shadow-sm);transform:translateY(-1px)}
-  .watch svg{width:16px;height:16px}
+  .results{display:grid;gap:14px}
+  .tier{border:1px solid var(--border);border-radius:14px;padding:16px 18px;background:var(--surface);
+    display:grid;grid-template-columns:1fr auto;gap:6px 18px;align-items:center;position:relative;overflow:hidden}
+  .tier::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--edge,var(--cobalt))}
+  .tier .tinfo{padding-left:6px}
+  .tier .tn{font-weight:800;font-size:16px;letter-spacing:-.01em}
+  .tier .tmeta{font-size:12.5px;color:var(--muted);margin-top:2px}
+  .tier .tmeta b{color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+  .tier .marginbox{text-align:right;padding-left:8px}
+  .tier .mLabel{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .tier .mVal{font-family:"Fraunces",serif;font-weight:700;font-size:clamp(24px,4vw,32px);line-height:1.05;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .tier .mNote{font-size:12px;font-weight:700;margin-top:1px}
+  .tier.pos{--edge:var(--mint)} .tier.pos .mVal,.tier.pos .mNote{color:var(--mint-deep)}
+  .tier.neg{--edge:var(--coral)} .tier.neg .mVal,.tier.neg .mNote{color:var(--coral-deep)}
+  .tier.neg{background:linear-gradient(90deg,rgba(251,78,91,.05),var(--surface) 60%)}
+
+  /* mini bar showing cost vs price */
+  .bar{grid-column:1/-1;height:8px;border-radius:6px;background:#eef1f8;overflow:hidden;margin-top:6px;position:relative}
+  .bar .fill{height:100%;border-radius:6px;transition:width .25s ease}
+  .tier.pos .bar .fill{background:linear-gradient(90deg,var(--mint),var(--mint-deep))}
+  .tier.neg .bar .fill{background:linear-gradient(90deg,var(--coral),var(--coral-deep))}
+  .barcap{grid-column:1/-1;display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted);font-weight:600;margin-top:-1px}
+
+  .footnote{color:var(--muted);font-size:13px;margin:22px 2px 0;line-height:1.55;max-width:760px}
+  .footnote b{color:var(--ink)}
+
+  footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--border);
+    display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;color:var(--muted);font-size:13.5px}
+  footer .fbrand{font-weight:800;color:var(--ink)}
+  footer a{color:var(--cobalt-deep);font-weight:700;text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  footer .sp{margin-left:auto}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <svg class="lotus" viewBox="0 0 100 100" aria-hidden="true">
-      <g fill="#2F5BEA">
-        <ellipse cx="50" cy="32" rx="9" ry="26"/>
-        <ellipse cx="50" cy="32" rx="9" ry="26" transform="rotate(45 50 50)"/>
-        <ellipse cx="50" cy="32" rx="9" ry="26" transform="rotate(90 50 50)"/>
-        <ellipse cx="50" cy="32" rx="9" ry="26" transform="rotate(135 50 50)"/>
-        <ellipse cx="50" cy="32" rx="9" ry="26" transform="rotate(180 50 50)"/>
-        <ellipse cx="50" cy="32" rx="9" ry="26" transform="rotate(225 50 50)"/>
-        <ellipse cx="50" cy="32" rx="9" ry="26" transform="rotate(270 50 50)"/>
-        <ellipse cx="50" cy="32" rx="9" ry="26" transform="rotate(315 50 50)"/>
-      </g>
-      <circle cx="50" cy="50" r="11" fill="#E0A12B"/>
-      <circle cx="50" cy="50" r="5" fill="#131C30"/>
-    </svg>
-    <span class="brand"><span class="ai">AI</span> Tokenomics</span>
-    <span class="pill">Tokens are the new cloud bill</span>
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M24 4C24 14 18 20 8 20c10 0 16 6 16 16 0-10 6-16 16-16-10 0-16-6-16-16Z" fill="#2F5BEA"/>
+        <path d="M24 14c0 5-3 8-8 8 5 0 8 3 8 8 0-5 3-8 8-8-5 0-8-3-8-8Z" fill="#10B981"/>
+      </svg>
+      <span><span class="ai">AI</span> Tokenomics</span>
+    </div>
+    <span class="pill">Margin Calculator</span>
   </header>
 
-  <h1>The <span class="hl">AI Cost</span> Calculator</h1>
-  <p class="sub">Two tools, no signup. First, the routing calculator from the Lerner Index video: see the spread between paying frontier prices for everything and routing like a buyer. Below it, the feature pricer: your monthly bill, cost per user, and gross margin for any AI feature.</p>
-
-  <!-- ============ PART 1 · ROUTING ============ -->
-  <div class="sect" id="routing">
-    <span class="n">Part 1</span>
-    <h2>The routing calculator</h2>
-  </div>
-  <p style="margin:4px 0 10px;color:var(--muted);font-size:14.5px;max-width:660px">One number, the Lerner Index, splits your traffic into two markets. Frontier reasoning sits near 1: a handful of sellers, high pricing power. Classify, extract, summarize sits near 0: dozens of good-enough models, and the seller loses pricing power the moment you can shop. Route each request to its layer and see what happens to the bill.</p>
-  <a class="watch" href="https://youtu.be/yW2uYTZcdWc" target="_blank" rel="noopener">
-    <svg viewBox="0 0 24 24" fill="#FF0000"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
-    Watch the 9-minute video this comes from
-  </a>
-
-  <div class="grid">
-    <!-- ROUTING INPUTS -->
-    <div>
-      <div class="card">
-        <h2>Your traffic</h2>
-        <div class="row"><label>Monthly token volume <small>input + output combined, in millions</small></label><div class="inp suf" data-suf="M"><input id="rVol" type="number" min="0" step="10" value="500"></div></div>
-        <div class="row"><label>Share that truly needs the frontier <small>hard reasoning, novel synthesis. Most teams find a fifth or less</small></label><div class="inp suf" data-suf="%"><input id="rShare" type="number" min="0" max="100" step="1" value="20"></div></div>
-        <p class="note">Don't know your split? Tag one day of real requests: could a mid-tier model have closed this? That day of logging is step 1 of the fix in the video.</p>
-      </div>
-      <div class="card">
-        <h2>Blended price per 1M tokens</h2>
-        <div class="row"><label>Frontier layer <small>blend of input + output rates at your mix</small></label><div class="inp pre"><input id="rpF" type="number" min="0" step="0.1" value="6.00"></div></div>
-        <div class="row"><label>Commodity layer <small>the good-enough tier, after shopping vendors</small></label><div class="inp pre"><input id="rpC" type="number" min="0" step="0.05" value="0.40"></div></div>
-        <p class="note">Defaults are illustrative: a Sonnet-class blend near <b>$6</b> vs. a Flash/nano-class blend near <b>$0.40</b>. The same open model is often priced 3 to 8x apart across vendors, so shop the commodity layer before you settle. Always verify live rates.</p>
-      </div>
-    </div>
-
-    <!-- ROUTING RESULTS -->
-    <div class="results">
-      <div class="bill mint">
-        <div class="k">Routed like a buyer</div>
-        <div class="big" id="rRouted">$0</div>
-        <div class="yr" id="rRoutedYr">$0 / year</div>
-      </div>
-      <div class="card" style="margin-top:18px">
-        <div class="compare-line" style="border-top:none"><span class="lab">Frontier for everything</span><span class="val coral" id="rAll">$0</span></div>
-        <div class="compare-line"><span class="lab">You keep, every month</span><span class="val mint" id="rSave">$0</span></div>
-        <div class="compare-line"><span class="lab">Bill drop</span><span class="val mint" id="rPct">0%</span></div>
-      </div>
-      <div class="card" style="margin-top:18px">
-        <h2 style="margin-bottom:10px">The two markets in one API call</h2>
-        <div class="layers">
-          <div class="layer alarm"><b>Frontier · Lerner near 1</b>Few sellers, hard to swap. Pay up here only where you must, and cap it.</div>
-          <div class="layer mint"><b>Commodity · Lerner near 0</b>Dozens of good-enough models. Compare, switch, push price toward cost.</div>
-        </div>
-        <p class="note" style="margin-top:10px">The fix, in order: <b>sort</b> a day of traffic, put a <b>router</b> in front, <b>shop</b> the commodity layer, set a hard <b>cap</b>, <b>quality-gate</b> the cheap path. Real bills drop 40 to 85% depending on your split.</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- ============ PART 2 · FEATURE PRICER ============ -->
-  <div class="sect" id="feature">
-    <span class="n">Part 2</span>
-    <h2>Price any AI feature before you build it</h2>
-  </div>
-  <p style="margin:4px 0 18px;color:var(--muted);font-size:14.5px;max-width:640px">Plug in your tokens, prices, and users, and it shows you the monthly bill, the cost per user, and your gross margin.</p>
+  <h1>Your best customers are quietly your biggest <span class="hl">AI loss</span>.</h1>
+  <p class="sub">One flat price. Three very different users. When the bill scales with usage but the price doesn't, your heaviest customers can cost you more than they pay. Punch in your numbers and watch where profit turns into loss.</p>
 
   <div class="grid">
     <!-- INPUTS -->
-    <div>
-      <div class="card">
-        <h2>Model & token prices</h2>
-        <div class="presetrow">
-          <select id="preset" aria-label="Model preset">
-            <option value="">Start from a preset (example prices)…</option>
-          </select>
-        </div>
-        <div class="row"><label>Input price <small>per 1M tokens</small></label><div class="inp pre"><input id="pIn" type="number" min="0" step="0.01" value="3.00"></div></div>
-        <div class="row"><label>Cached input price <small>per 1M (usually ~10× cheaper)</small></label><div class="inp pre"><input id="pCache" type="number" min="0" step="0.01" value="0.30"></div></div>
-        <div class="row"><label>Output price <small>per 1M tokens</small></label><div class="inp pre"><input id="pOut" type="number" min="0" step="0.01" value="15.00"></div></div>
+    <div class="card" role="form" aria-label="Inputs">
+      <h2>Your numbers</h2>
+      <p class="h2sub">Everything recalculates live.</p>
+
+      <div class="row">
+        <label>Cost per outcome
+          <small>Your all-in AI cost for one useful result (a report, a reply, a render).</small></label>
+        <span class="inp pre"><input id="cost" type="number" inputmode="decimal" step="0.001" min="0" value="0.049" aria-label="Cost per outcome in dollars"></span>
+      </div>
+      <div class="row">
+        <label>Flat price / user / month
+          <small>What every user pays you, regardless of how much they use.</small></label>
+        <span class="inp pre"><input id="price" type="number" inputmode="decimal" step="1" min="0" value="50" aria-label="Flat price per user per month"></span>
       </div>
 
-      <div class="card">
-        <h2>Tokens per request</h2>
-        <div class="row"><label>Input tokens <small>system prompt + context + question</small></label><div class="inp suf" data-suf="tok"><input id="tIn" type="number" min="0" step="1" value="5000"></div></div>
-        <div class="row"><label>Cached input tokens <small>repeated/cacheable share of input</small></label><div class="inp suf" data-suf="tok"><input id="tCache" type="number" min="0" step="1" value="4000"></div></div>
-        <div class="row"><label>Output tokens <small>what the model writes back</small></label><div class="inp suf" data-suf="tok"><input id="tOut" type="number" min="0" step="1" value="800"></div></div>
-        <div class="row"><label>Tool cost <small>per-request tool/API/retrieval (optional)</small></label><div class="inp pre"><input id="tTool" type="number" min="0" step="0.001" value="0"></div></div>
-        <div class="row"><label>Retry rate <small>fraction that retry (0.05 = 5%)</small></label><div class="inp"><input id="retry" type="number" min="0" step="0.01" value="0.05"></div></div>
-      </div>
-
-      <div class="card">
-        <h2>Volume & revenue</h2>
-        <div class="row"><label>Requests / user / month</label><div class="inp"><input id="rpu" type="number" min="0" step="1" value="50"></div></div>
-        <div class="row"><label>Number of users <small>monthly active</small></label><div class="inp"><input id="users" type="number" min="0" step="1" value="2000"></div></div>
-        <div class="row"><label>Revenue / user / month <small>for margin (optional)</small></label><div class="inp pre"><input id="rev" type="number" min="0" step="0.01" value="0"></div></div>
-        <div class="row"><label>Other variable cost / user <small>infra, support… (optional)</small></label><div class="inp pre"><input id="other" type="number" min="0" step="0.01" value="0"></div></div>
-      </div>
+      <div class="tierhead">Usage tiers · outcomes per month</div>
+      <div id="tierInputs"></div>
     </div>
 
     <!-- RESULTS -->
-    <div class="results">
-      <div class="bill">
-        <div class="k">Monthly AI bill</div>
-        <div class="big" id="oMonthly">$0</div>
-        <div class="yr" id="oAnnual">$0 / year</div>
+    <div style="display:grid;gap:16px">
+      <div class="be">
+        <div class="beMain">
+          <span class="beLabel">Break-even usage</span>
+          <div class="beRow"><span class="beNum" id="beNum">1,020</span><span class="beUnit">outcomes / mo</span></div>
+        </div>
+        <p class="beCaption">Above this many outcomes a month, a user <b>loses you money</b> on a <b id="bePrice">$50</b> flat plan. Everyone past the line is subsidized by everyone below it.</p>
       </div>
-      <div class="card" style="margin-top:18px">
-        <div class="stat"><span class="lab">Cost per request</span><span class="val ink" id="oReq">$0</span></div>
-        <div class="stat"><span class="lab">Cost per user / month</span><span class="val gold" id="oUser">$0</span></div>
-        <div class="stat"><span class="lab">Gross margin / user</span><span class="val mint" id="oMargin">·</span></div>
-        <div class="stat"><span class="lab">Gross margin %</span><span class="val mint" id="oMarginPct">·</span></div>
-      </div>
-      <div class="card" style="margin-top:18px">
-        <h2 style="margin-bottom:10px">Where the money goes</h2>
-        <div class="bar" id="bar"></div>
-        <div class="legend" id="legend"></div>
-      </div>
-      <div class="verify">⚠︎ Prices change monthly. Always pull live <b>input / output</b> rates from your provider's pricing page. Self-hosting? Use your LLMOps team's per-token cost.</div>
+
+      <div class="results" id="results"></div>
+
+      <p class="footnote">
+        Margin = flat price − (outcomes × cost per outcome). Break-even = price ÷ cost per outcome.
+        This is the exact trap from the video <b>“Your Best Customers Are Quietly Your Biggest AI Loss.”</b>
+        Fixes worth modeling: a usage ceiling, a metered top tier, or routing heavy outcomes to a cheaper model so your cost per outcome drops.
+      </p>
     </div>
   </div>
 
   <footer>
-    <div class="social">
-      <a href="https://www.youtube.com/@AITokenomics" target="_blank" rel="noopener" aria-label="YouTube">
-        <svg viewBox="0 0 24 24" fill="#FF0000"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.6 12 3.6 12 3.6s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
-        YouTube
-      </a>
-      <a href="https://www.instagram.com/aitokenomics/" target="_blank" rel="noopener" aria-label="Instagram">
-        <svg viewBox="0 0 24 24" fill="none" stroke="#C13584" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.2" fill="#C13584" stroke="none"/></svg>
-        Instagram
-      </a>
-      <a href="https://www.linkedin.com/company/ai-tokenomics-yt/" target="_blank" rel="noopener" aria-label="LinkedIn">
-        <svg viewBox="0 0 24 24" fill="#0A66C2"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.55V9h3.57v11.45zM22.22 0H1.78C.8 0 0 .78 0 1.74v20.52C0 23.22.8 24 1.78 24h20.44c.98 0 1.78-.78 1.78-1.74V1.74C24 .78 23.2 0 22.22 0z"/></svg>
-        LinkedIn
-      </a>
-    </div>
-    <p class="credit">Made by <b>AI Tokenomics</b>. The real cost of AI, explained with numbers.</p>
-    <p class="math">Routing math: frontier-for-everything = volume × frontier price. Routed = volume × (frontier share × frontier price + commodity share × commodity price). Feature math: cost per request = (fresh input ÷ 1M × price) + (cached ÷ 1M × cached price) + (output ÷ 1M × price) + tool cost, all × (1 + retry rate). Monthly bill = cost per request × requests per user × users.</p>
+    <span class="fbrand">AI Tokenomics</span>
+    <span>The unit economics of building with AI.</span>
+    <span class="sp"></span>
+    <a href="https://www.youtube.com/@AITokenomics" target="_blank" rel="noopener">Watch on YouTube →</a>
   </footer>
 </div>
 
 <script>
-  // Example presets. Prices are illustrative starting points, so verify the live rates.
-  // Illustrative list prices per 1M tokens (input / cached-input / output). Models and
-  // rates change often, so always confirm on the provider's live pricing page.
-  const PRESETS = [
-    {name:"Anthropic · Claude Opus 4.8",      pIn:15.00, pCache:1.50,  pOut:75.00},
-    {name:"Anthropic · Claude Sonnet 4.6",    pIn:3.00,  pCache:0.30,  pOut:15.00},
-    {name:"Anthropic · Claude Haiku 4.5",     pIn:1.00,  pCache:0.10,  pOut:5.00},
-    {name:"OpenAI · GPT-5",                    pIn:1.25,  pCache:0.125, pOut:10.00},
-    {name:"OpenAI · GPT-5 mini",              pIn:0.25,  pCache:0.025, pOut:2.00},
-    {name:"OpenAI · GPT-5 nano",              pIn:0.05,  pCache:0.005, pOut:0.40},
-    {name:"OpenAI · GPT-4o",                   pIn:2.50,  pCache:1.25,  pOut:10.00},
-    {name:"OpenAI · GPT-4o mini",             pIn:0.15,  pCache:0.075, pOut:0.60},
-    {name:"Google · Gemini 2.5 Pro",          pIn:1.25,  pCache:0.31,  pOut:10.00},
-    {name:"Google · Gemini 2.5 Flash",        pIn:0.30,  pCache:0.075, pOut:2.50},
-    {name:"Google · Gemini 2.5 Flash-Lite",   pIn:0.10,  pCache:0.025, pOut:0.40},
-    {name:"xAI · Grok 4",                      pIn:3.00,  pCache:0.75,  pOut:15.00},
-    {name:"xAI · Grok 4 Fast",                pIn:0.20,  pCache:0.05,  pOut:0.50},
+(function(){
+  "use strict";
+  var DEFAULT_TIERS = [
+    {name:"Light",  out:220},
+    {name:"Median", out:880},
+    {name:"Power",  out:3300}
   ];
-  const $=id=>document.getElementById(id);
-  const sel=$("preset");
-  PRESETS.forEach((p,i)=>{const o=document.createElement("option");o.value=i;o.textContent=p.name;sel.appendChild(o);});
-  sel.addEventListener("change",e=>{const p=PRESETS[e.target.value];if(!p)return;$("pIn").value=p.pIn;$("pCache").value=p.pCache;$("pOut").value=p.pOut;calc();});
 
-  const num=id=>{const v=parseFloat($(id).value);return isFinite(v)&&v>0?v:0;};
-  const money=v=> v>=1000 ? "$"+v.toLocaleString(undefined,{maximumFractionDigits:0})
-              : v>=100 ? "$"+v.toFixed(0)
-              : v>=1 ? "$"+v.toFixed(2)
-              : "$"+v.toFixed(v>=0.01?3:4);
-  const COL={fresh:"#2F5BEA",cached:"#10B981",output:"#E0A12B",tool:"#FB4E5B"};
+  var $ = function(id){ return document.getElementById(id); };
 
-  function calc(){
-    const tIn=num("tIn"), tCache=Math.min(num("tCache"),num("tIn")), tOut=num("tOut");
-    const fresh=Math.max(tIn-tCache,0);
-    const cFresh=fresh/1e6*num("pIn");
-    const cCache=tCache/1e6*num("pCache");
-    const cOut=tOut/1e6*num("pOut");
-    const cTool=num("tTool");
-    const base=cFresh+cCache+cOut+cTool;
-    const perReq=base*(1+num("retry"));
-    const rpu=num("rpu"), users=num("users");
-    const monthly=perReq*rpu*users;
-    const perUser=perReq*rpu;
-    const rev=num("rev"), other=num("other");
-    const margin=rev-perUser-other;
-    const marginPct = rev>0 ? margin/rev*100 : null;
+  // ---- helpers -------------------------------------------------------------
+  function num(v, fallback){
+    var n = parseFloat(v);
+    return (isFinite(n) && n >= 0) ? n : (fallback === undefined ? 0 : fallback);
+  }
+  function money(n){
+    var sign = n < 0 ? "-" : "";
+    var a = Math.abs(n);
+    // whole dollars when clean-ish, else 2dp
+    var rounded = Math.round(a);
+    var str = (Math.abs(a - rounded) < 0.005)
+      ? rounded.toLocaleString("en-US")
+      : a.toLocaleString("en-US", {minimumFractionDigits:2, maximumFractionDigits:2});
+    return sign + "$" + str;
+  }
+  function moneySigned(n){
+    var r = Math.round(n);
+    var whole = Math.abs(n - r) < 0.005;
+    var body = whole ? Math.abs(r).toLocaleString("en-US")
+                     : Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+    return (n < 0 ? "−$" : "+$") + body;   // note: minus sign U+2212 for negatives
+  }
+  function intFmt(n){ return Math.round(n).toLocaleString("en-US"); }
 
-    $("oMonthly").textContent=money(monthly);
-    $("oAnnual").textContent=money(monthly*12)+" / year";
-    $("oReq").textContent=money(perReq);
-    $("oUser").textContent=money(perUser);
-    if(rev>0){
-      $("oMargin").textContent=money(margin);
-      $("oMarginPct").textContent=marginPct.toFixed(0)+"%";
-      const cls=margin>=0?"mint":"coral";
-      $("oMargin").className="val "+cls; $("oMarginPct").className="val "+cls;
+  // ---- build tier inputs ---------------------------------------------------
+  var tiWrap = $("tierInputs");
+  DEFAULT_TIERS.forEach(function(t, i){
+    var div = document.createElement("div");
+    div.className = "tier-in";
+    div.innerHTML =
+      '<span class="inp"><input class="tname" type="text" value="'+t.name+'" aria-label="Tier '+(i+1)+' name"></span>' +
+      '<span class="tcap">outcomes</span>' +
+      '<span class="inp suf" data-suf="/mo"><input class="tout" type="number" inputmode="numeric" step="10" min="0" value="'+t.out+'" aria-label="'+t.name+' outcomes per month"></span>';
+    tiWrap.appendChild(div);
+  });
+
+  // ---- compute + render ----------------------------------------------------
+  function compute(){
+    var cost  = num($("cost").value, 0);
+    var price = num($("price").value, 0);
+
+    // break-even
+    var beEl = $("beNum");
+    if (cost > 0){
+      var be = price / cost;
+      beEl.textContent = intFmt(be);
     } else {
-      $("oMargin").textContent="·"; $("oMarginPct").textContent="·";
-      $("oMargin").className="val muted"; $("oMarginPct").className="val muted";
+      beEl.textContent = "∞";
+    }
+    $("bePrice").textContent = money(price);
+
+    // per-tier
+    var names = document.querySelectorAll(".tier-in .tname");
+    var outs  = document.querySelectorAll(".tier-in .tout");
+    var maxAbs = 0;
+    var data = [];
+    for (var i=0;i<names.length;i++){
+      var nm = (names[i].value || ("Tier "+(i+1))).trim();
+      var o  = num(outs[i].value, 0);
+      var c  = o * cost;
+      var m  = price - c;
+      data.push({name:nm, out:o, cost:c, margin:m, price:price});
+      if (Math.abs(m) > maxAbs) maxAbs = Math.abs(m);
+      if (c > maxAbs) maxAbs = c;
     }
 
-    // breakdown bar (of base request cost)
-    const parts=[["fresh",cFresh],["cached",cCache],["output",cOut],["tool",cTool]];
-    const tot=parts.reduce((a,[,v])=>a+v,0)||1;
-    $("bar").innerHTML=parts.map(([k,v])=>`<span style="width:${v/tot*100}%;background:${COL[k]}"></span>`).join("");
-    $("legend").innerHTML=parts.filter(([,v])=>v>0).map(([k,v])=>
-      `<span><i style="background:${COL[k]}"></i>${k} ${(v/tot*100).toFixed(0)}%</span>`).join("")
-      + ` <span><i style="background:#5B6680"></i>+${(num("retry")*100).toFixed(0)}% retries</span>`;
+    var res = $("results");
+    res.innerHTML = "";
+    data.forEach(function(d){
+      var pos = d.margin >= 0;
+      var el = document.createElement("div");
+      el.className = "tier " + (pos ? "pos" : "neg");
+
+      // bar fill: cost as a fraction of the largest value on screen (price or cost)
+      var scale = Math.max(maxAbs, d.price, d.cost, 1);
+      var costPct = Math.min(100, (d.cost / scale) * 100);
+
+      el.innerHTML =
+        '<div class="tinfo">' +
+          '<div class="tn">'+escapeHtml(d.name)+'</div>' +
+          '<div class="tmeta"><b>'+intFmt(d.out)+'</b> outcomes/mo · AI cost <b>'+money(d.cost)+'</b> · pays <b>'+money(d.price)+'</b></div>' +
+        '</div>' +
+        '<div class="marginbox">' +
+          '<div class="mLabel">Margin</div>' +
+          '<div class="mVal">'+moneySigned(d.margin)+'</div>' +
+          '<div class="mNote">'+(pos ? "you keep this" : "you lose this")+'</div>' +
+        '</div>' +
+        '<div class="bar"><div class="fill" style="width:'+costPct.toFixed(1)+'%"></div></div>' +
+        '<div class="barcap"><span>AI cost '+money(d.cost)+'</span><span>price line '+money(d.price)+'</span></div>';
+      res.appendChild(el);
+    });
   }
-  // Part 1: routing spread. Volume is in millions of tokens, prices are per 1M,
-  // so dollars = volume × price directly.
-  function rcalc(){
-    const vol=num("rVol");
-    const share=Math.min(num("rShare"),100)/100;
-    const pF=num("rpF"), pC=num("rpC");
-    const all=vol*pF;
-    const routed=vol*(share*pF+(1-share)*pC);
-    const save=Math.max(all-routed,0);
-    $("rAll").textContent=money(all)+" / mo";
-    $("rRouted").textContent=money(routed);
-    $("rRoutedYr").textContent=money(routed*12)+" / year";
-    $("rSave").textContent=money(save);
-    $("rPct").textContent=(all>0?(save/all*100):0).toFixed(0)+"% lower";
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, function(ch){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch];
+    });
   }
-  document.querySelectorAll("input").forEach(el=>el.addEventListener("input",()=>{calc();rcalc();}));
-  calc();rcalc();
+
+  // ---- wire up -------------------------------------------------------------
+  document.addEventListener("input", function(e){
+    if (e.target && e.target.closest && (e.target.closest(".card") || e.target.closest(".tier-in"))){
+      compute();
+    }
+  });
+  compute();
+})();
 </script>
 </body>
 </html>
