@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>True Cost Calculator · AI Tokenomics</title>
+<meta name="description" content="The calculator from the $2 demo video: see what your cheap AI demo actually costs in production, then pull the two levers that shrink the bill." />
+<meta property="og:title" content="True Cost Calculator · your $2 demo, priced at production scale" />
+<meta property="og:description" content="Demos hide scale, retries and context growth. Run your own numbers and see the real monthly bill." />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cobalt:#2F5BEA; --cobalt-deep:#1E40C8; --mint:#10B981; --mint-deep:#0E9F70;
+    --gold:#E0A12B; --coral:#FB4E5B; --coral-deep:#D93440; --paper:#FBFCFE; --surface:#FFFFFF;
+    --ink:#131C30; --muted:#5B6680; --border:#E6EAF2; --grid:rgba(47,91,234,.05);
+    --shadow-sm:0 6px 18px rgba(19,28,48,.06); --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Hanken Grotesk",system-ui,sans-serif;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:60px 60px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 22px 60px}
+  header{display:flex;align-items:center;gap:14px;margin:8px 0 6px}
+  .brand{font-weight:800;font-size:20px;letter-spacing:-.01em}
+  .brand .ai{color:var(--cobalt)}
+  .pill{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--cobalt-deep);background:rgba(47,91,234,.09);
+    border:1px solid rgba(47,91,234,.18);padding:7px 14px;border-radius:999px}
+  h1{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(28px,4vw,44px);line-height:1.05;margin:18px 0 8px;letter-spacing:-.01em}
+  h1 .hl{color:var(--coral)}
+  .sub{color:var(--muted);font-size:16px;max-width:640px;margin:0 0 26px}
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:26px;align-items:start}
+  @media(max-width:860px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:22px}
+  .card h2{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 16px}
+  .card+.card{margin-top:18px}
+  .row{display:grid;grid-template-columns:1fr 130px;align-items:center;gap:12px;padding:9px 0;border-top:1px solid var(--border)}
+  .row:first-of-type{border-top:none}
+  .row label{font-size:14.5px;font-weight:500}
+  .row label small{display:block;color:var(--muted);font-weight:400;font-size:12px;margin-top:1px}
+  .inp{position:relative}
+  .inp input{width:100%;font-family:inherit;font-size:15px;font-weight:700;text-align:right;color:var(--ink);
+    background:var(--paper);border:1.5px solid var(--border);border-radius:10px;padding:9px 11px;outline:none;
+    font-variant-numeric:tabular-nums;transition:border-color .12s,box-shadow .12s}
+  .inp input:focus{border-color:var(--cobalt);box-shadow:0 0 0 3px rgba(47,91,234,.14)}
+  .inp.pre input{padding-left:24px}
+  .inp.pre::before{content:"$";position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700;font-size:14px}
+  .inp.suf input{padding-right:36px}
+  .inp.suf::after{content:attr(data-suf);position:absolute;right:11px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700;font-size:12px}
+  .note{font-size:12.5px;color:var(--muted);margin-top:12px;line-height:1.5}
+  /* the bill */
+  .bill{background:linear-gradient(160deg,#fff, #FDF6F6);border:1px solid #F2DCDE}
+  .bill .lbl{font-size:12.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--coral-deep)}
+  .bill .big{font-weight:800;font-size:clamp(38px,7vw,52px);line-height:1;margin:8px 0 2px;font-variant-numeric:tabular-nums;color:var(--coral-deep)}
+  .bill .per{color:var(--muted);font-size:13.5px;font-weight:600}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  .stat{background:var(--paper);border:1px solid var(--border);border-radius:12px;padding:12px}
+  .stat .k{font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .stat .val{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;margin-top:3px}
+  .mult{display:inline-block;margin-top:12px;background:rgba(251,78,91,.1);border:1px solid rgba(251,78,91,.25);
+    color:var(--coral-deep);font-weight:800;font-size:13.5px;padding:6px 12px;border-radius:999px}
+  .opt .big{color:var(--mint-deep)}
+  .opt{background:linear-gradient(160deg,#fff,#F3FBF7);border-color:#DCF0E6}
+  .opt .lbl{color:var(--mint-deep)}
+  .videocard{margin-top:18px}
+  .vframe{position:relative;padding-top:56.25%;border-radius:12px;overflow:hidden;background:#0b1020}
+  .vframe iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  footer{margin-top:34px;padding-top:18px;border-top:1px solid var(--border);display:flex;gap:14px;align-items:center;
+    color:var(--muted);font-size:13.5px;flex-wrap:wrap}
+  footer .fbrand{font-weight:800;color:var(--ink)}
+  footer a{color:var(--cobalt-deep);font-weight:700;text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  footer .sp{margin-left:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="ai">AI</span> Tokenomics</div>
+    <div class="pill">Free tool · no signup</div>
+  </header>
+
+  <h1>Your demo costs $2.<br><span class="hl">What does production cost?</span></h1>
+  <p class="sub">A demo hides the three things that make a real bill: scale, retries, and context growth.
+  Enter your demo numbers, then let this page price the same feature at production volume.</p>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>1 · The demo you just ran</h2>
+        <div class="row"><label>Requests in the demo<small>every call you made while showing it off</small></label>
+          <div class="inp"><input id="dReq" type="number" value="100" min="1"></div></div>
+        <div class="row"><label>Input tokens per request<small>prompt + instructions + the data you sent</small></label>
+          <div class="inp"><input id="dTin" type="number" value="2000" min="0"></div></div>
+        <div class="row"><label>Output tokens per request<small>what the model wrote back</small></label>
+          <div class="inp"><input id="dTout" type="number" value="900" min="0"></div></div>
+        <div class="row"><label>Input price<small>per 1M tokens</small></label>
+          <div class="inp pre"><input id="dPin" type="number" value="3" step="0.05" min="0"></div></div>
+        <div class="row"><label>Output price<small>per 1M tokens</small></label>
+          <div class="inp pre"><input id="dPout" type="number" value="15" step="0.05" min="0"></div></div>
+      </div>
+
+      <div class="card">
+        <h2>2 · The production it becomes</h2>
+        <div class="row"><label>Users<small>people who touch the feature</small></label>
+          <div class="inp"><input id="pUsers" type="number" value="2000" min="0"></div></div>
+        <div class="row"><label>Requests per user per day</label>
+          <div class="inp"><input id="pRpd" type="number" value="9" step="0.5" min="0"></div></div>
+        <div class="row"><label>Retry + agent overhead<small>failed calls, tool loops, evals (1.0 = none)</small></label>
+          <div class="inp suf" data-suf="×"><input id="pOver" type="number" value="1.35" step="0.05" min="1"></div></div>
+        <div class="row"><label>Context growth<small>RAG, history, system prompts vs the demo (input side)</small></label>
+          <div class="inp suf" data-suf="×"><input id="pCtx" type="number" value="2.5" step="0.1" min="1"></div></div>
+      </div>
+
+      <div class="card">
+        <h2>3 · The two levers that shrink it</h2>
+        <div class="row"><label>Prompt cache hit rate<small>cached input bills at ~10% of price</small></label>
+          <div class="inp suf" data-suf="%"><input id="oCache" type="number" value="0" min="0" max="95"></div></div>
+        <div class="row"><label>Traffic routed to a cheap model<small>the easy majority of calls</small></label>
+          <div class="inp suf" data-suf="%"><input id="oRoute" type="number" value="0" min="0" max="95"></div></div>
+        <div class="row"><label>Cheap model input / output price<small>per 1M tokens</small></label>
+          <div class="inp pre"><input id="oPin" type="number" value="0.5" step="0.05" min="0"></div></div>
+        <div class="row"><label>&nbsp;</label>
+          <div class="inp pre"><input id="oPout" type="number" value="2" step="0.05" min="0"></div></div>
+        <p class="note">Levers stack: cached input first, then the routed share moves to the cheap model's prices.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="card bill">
+        <div class="lbl">The real monthly bill</div>
+        <div class="big" id="rBill">$0</div>
+        <div class="per" id="rPerUser">per month · $0 per user</div>
+        <span class="mult" id="rMult">0× the demo</span>
+        <div class="stats">
+          <div class="stat"><div class="k">Demo cost</div><div class="val" id="rDemo">$0</div></div>
+          <div class="stat"><div class="k">Requests / month</div><div class="val" id="rReqs">0</div></div>
+          <div class="stat"><div class="k">Cost per request</div><div class="val" id="rCpr">$0</div></div>
+          <div class="stat"><div class="k">Yearly run-rate</div><div class="val" id="rYear">$0</div></div>
+        </div>
+      </div>
+
+      <div class="card bill opt">
+        <div class="lbl">With your levers pulled</div>
+        <div class="big" id="oBill">$0</div>
+        <div class="per" id="oSave">saves $0 / month</div>
+      </div>
+
+      <div class="card videocard">
+        <h2>The video behind this calculator</h2>
+        <div class="vframe"><iframe src="https://www.youtube-nocookie.com/embed/A1Th45UsdqM" title="The $2 AI Demo That Becomes a $20,000 Production Bill" loading="lazy" allowfullscreen></iframe></div>
+        <p class="note"><a href="https://youtu.be/A1Th45UsdqM" target="_blank" rel="noopener">Watch on YouTube →</a></p>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span class="fbrand"><span style="color:var(--cobalt)">AI</span> Tokenomics</span>
+    <span>The real cost of AI, one bill at a time.</span>
+    <span class="sp"><a href="https://www.youtube.com/@AITokenomics" target="_blank" rel="noopener">YouTube</a> · <a href="index.html">All calculators</a></span>
+  </footer>
+</div>
+
+<script>
+  const $=id=>document.getElementById(id);
+  const num=id=>{const v=parseFloat($(id).value);return isFinite(v)?v:0};
+  const money=v=>{
+    if(v>=1000) return "$"+Math.round(v).toLocaleString("en-US");
+    if(v>=100) return "$"+v.toFixed(0);
+    return "$"+v.toFixed(2);
+  };
+  function calc(){
+    const tin=num("dTin"), tout=num("dTout"), pin=num("dPin"), pout=num("dPout");
+    const demo=num("dReq")*(tin*pin+tout*pout)/1e6;
+    const reqs=num("pUsers")*num("pRpd")*30*Math.max(num("pOver"),1);
+    const tinP=tin*Math.max(num("pCtx"),1);
+    const cpr=(tinP*pin+tout*pout)/1e6;
+    const bill=reqs*cpr;
+    // levers
+    const c=Math.min(Math.max(num("oCache"),0),95)/100;
+    const r=Math.min(Math.max(num("oRoute"),0),95)/100;
+    const pinC=pin*(1-c*0.9);
+    const cprFront=(tinP*pinC+tout*pout)/1e6;
+    const oPinC=num("oPin")*(1-c*0.9);
+    const cprCheap=(tinP*oPinC+tout*num("oPout"))/1e6;
+    const oBill=reqs*((1-r)*cprFront + r*cprCheap);
+    const users=Math.max(num("pUsers"),1);
+    $("rDemo").textContent=money(demo);
+    $("rBill").textContent=money(bill);
+    $("rPerUser").textContent="per month · "+money(bill/users)+" per user";
+    $("rMult").textContent=(demo>0?Math.round(bill/demo).toLocaleString("en-US"):"–")+"× the demo";
+    $("rReqs").textContent=Math.round(reqs).toLocaleString("en-US");
+    $("rCpr").textContent="$"+cpr.toFixed(4);
+    $("rYear").textContent=money(bill*12);
+    $("oBill").textContent=money(oBill);
+    $("oSave").textContent="saves "+money(Math.max(bill-oBill,0))+" / month";
+  }
+  document.querySelectorAll("input").forEach(i=>i.addEventListener("input",calc));
+  calc();
+</script>
+</body>
+</html>
