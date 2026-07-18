@@ -62,6 +62,7 @@
       if(on&&!f.src&&f.dataset.src)f.src=f.dataset.src;   // lazy-load
     });
     if(location.hash!=="#"+p)history.replaceState(null,"","#"+p);
+    if(typeof gtag==="function")gtag("event","calculator_view",{calculator:p});
   }
   tabs.forEach(t=>t.addEventListener("click",()=>show(t.dataset.p)));
   const h=location.hash.slice(1);
