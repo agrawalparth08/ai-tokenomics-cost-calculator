@@ -208,6 +208,16 @@
   }
   document.querySelectorAll("input").forEach(i=>i.addEventListener("input",calc));
   calc();
+
+  // GA4: fire once when the visitor actually engages with an input.
+  (function(){
+    var fired=false;
+    document.addEventListener("input",function(e){
+      if(fired||!e.target.matches("input"))return;
+      fired=true;
+      if(typeof gtag==="function")gtag("event","calculator_input",{calculator:"truecost",field:e.target.id||"unknown"});
+    },{passive:true});
+  })();
 </script>
 </body>
 </html>
