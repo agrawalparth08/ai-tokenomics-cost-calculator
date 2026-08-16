@@ -100,7 +100,21 @@
         <div class="row"><label>Merge rate <small>agent authored PRs merged 84% overall, 45 to 83% by agent (arXiv 2509.14745)</small><input type="range" id="merge" min="20" max="95" step="1" value="67"></label><div class="val" id="merge-v">67%</div></div>
         <div class="row"><label>Human review minutes per merged change <small>agent PRs take about 20% longer from first review to merge</small><input type="range" id="revm" min="5" max="120" step="5" value="60"></label><div class="val" id="revm-v">60 min</div></div>
         <div class="row"><label>Review minutes per rejected PR<input type="range" id="revr" min="0" max="60" step="5" value="15"></label><div class="val" id="revr-v">15 min</div></div>
-        <div class="row"><label>Engineer cost per hour, fully loaded <small>US median base is about $64; loaded is closer to $100</small><input type="range" id="eng" min="30" max="250" step="5" value="100"></label><div class="val" id="eng-v">$100</div></div>
+        <div class="row"><label>Where is the engineer? <small>sets a base to fully loaded range; you can still drag the slider</small>
+          <select id="country">
+            <option value="us" selected>United States (BLS OEWS May 2025 median $132,684; loaded 1.3x) $66 to $86/hr, high confidence</option>
+            <option value="uk">United Kingdom (ONS ASHE 2025 median GBP 56,914; 1.3x) $36 to $47/hr, high</option>
+            <option value="in">India (cross-source median about INR 17 lakh; 1.3x) $10 to $13/hr, medium</option>
+            <option value="de">Germany (BA Entgeltatlas / StepStone blend about EUR 60k; 1.35x) $32 to $44/hr, medium</option>
+            <option value="ca">Canada (about CAD 100k mid-level; 1.27x) $37 to $46/hr, medium</option>
+            <option value="sg">Singapore (about USD 71k; 1.22x CPF) $36 to $43/hr, low to medium</option>
+            <option value="au">Australia (about AUD 110k; 1.28x super) $36 to $46/hr, low to medium</option>
+            <option value="pl">Poland (about PLN 180k; 1.4x ZUS) $23 to $32/hr, low to medium</option>
+            <option value="br">Brazil (about USD 25k; 1.7x, 13th salary + FGTS + INSS) $13 to $21/hr, low</option>
+            <option value="ph">Philippines (about PHP 900k; 1.28x) $8 to $10/hr, low</option>
+            <option value="custom">Custom (drag the slider)</option>
+          </select></label><div class="val" id="country-v">$66 to $86</div></div>
+        <div class="row"><label>Engineer cost per hour to the company <small>defaults to the top of the loaded range for the country above; the video's worked example rounds the US to $100</small><input type="range" id="eng" min="5" max="250" step="1" value="86"></label><div class="val" id="eng-v">$86</div></div>
         <div class="row"><label>Merged changes an engineer ships per week, unaided<input type="range" id="engch" min="2" max="25" step="1" value="8"></label><div class="val" id="engch-v">8</div></div>
       </div>
     </div>
@@ -131,10 +145,11 @@
     </div>
   </div>
 
-  <p class="foot">Sources: Anthropic and provider price pages, August 2026; BLS OEWS software developer median; Forbes on Uber's agent spend and cap (May 2026); arXiv 2509.14745 on agent PR merge rates and review time. Illustrative model, not advice. More calculators: <a href="index.html#truecost">true cost at scale</a>, <a href="index.html#routing">routing</a>, <a href="index.html#margin">margin per customer</a>.</p>
+  <p class="foot">Sources: Anthropic and provider price pages, August 2026; engineer cost by country from BLS OEWS May 2025 (US), ONS ASHE 2025 (UK), and labelled cross-source estimates elsewhere with a country specific loading multiplier (statutory employer costs + benefits), confidence shown in the dropdown; Forbes on Uber's agent spend and cap (May 2026); arXiv 2509.14745 on agent PR merge rates and review time. Illustrative model, not advice. More calculators: <a href="index.html#truecost">true cost at scale</a>, <a href="index.html#routing">routing</a>, <a href="index.html#margin">margin per customer</a>.</p>
 </div>
 <script>
 const P={sonnet:[2,10],luna:[0.2,1.2],terra:[2,12],grok:[2,6],ds:[0.66,1.98],opus:[5,25]};
+const C={us:[66,86],uk:[36,47],in:[10,13],de:[32,44],ca:[37,46],sg:[36,43],au:[36,46],pl:[23,32],br:[13,21],ph:[8,10]};
 const $=id=>document.getElementById(id);
 const fmt=n=>"$"+Math.round(n).toLocaleString("en-US");
 document.querySelectorAll("#presets button").forEach(b=>b.addEventListener("click",()=>{
@@ -142,6 +157,7 @@ document.querySelectorAll("#presets button").forEach(b=>b.addEventListener("clic
   $("pin").value=P[b.dataset.p][0]; $("pout").value=P[b.dataset.p][1]; calc();
 }));
 ["pin","pout","tph","oshare","hrs","ppl","prs","merge","revm","revr","eng","engch"].forEach(id=>$(id).addEventListener("input",calc));
+$("country").addEventListener("change",()=>{const c=$("country").value;if(C[c]){$("eng").value=C[c][1];$("country-v").textContent="$"+C[c][0]+" to $"+C[c][1]}else{$("country-v").textContent="custom"}calc()});
 function calc(){
   const pin=+$("pin").value,pout=+$("pout").value,tph=+$("tph").value,os=+$("oshare").value/100,hrs=+$("hrs").value,ppl=+$("ppl").value;
   const prs=+$("prs").value,mr=+$("merge").value/100,revm=+$("revm").value,revr=+$("revr").value,eng=+$("eng").value,engch=+$("engch").value;
@@ -154,7 +170,7 @@ function calc(){
   const revPerMerged=(revm/60)*eng;
   const rejPerMerged=merged>0?(rejected*(revr/60)*eng)/merged:Infinity;
   const agent=tokPerMerged+revPerMerged+rejPerMerged;
-  const engPer=(eng*40)/engch;
+  const engPer=(eng*40)/engch; // engineer cost per merged change = weekly loaded cost / merged changes per week
   $("o-agent").textContent=isFinite(agent)?fmt(agent):"n/a";
   $("o-agent-note").textContent=isFinite(agent)?`tokens ${fmt(tokPerMerged)} + review ${fmt(revPerMerged+rejPerMerged)} (agent hour ~${fmt(dollarsPerHour)})`:"no merged changes";
   $("o-eng").textContent=fmt(engPer);
