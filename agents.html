@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Coding Agent Cost Calculator · AI Tokenomics</title>
+<meta name="description" content="Dollars per hour is the wrong meter for a coding agent. Model the real one: dollars per merged change, with merge rate, review time and a per person cap you can defend." />
+<meta property="og:title" content="Coding Agent Cost Calculator · AI Tokenomics" />
+<meta property="og:description" content="Agent at $12 an hour vs engineer at $100 an hour is a trap. Slide merge rate and review minutes and watch the honest number move." />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cobalt:#2F5BEA; --cobalt-deep:#1E40C8; --mint:#10B981; --mint-deep:#0E9F70;
+    --gold:#E0A12B; --coral:#FB4E5B; --paper:#FBFCFE; --surface:#FFFFFF;
+    --ink:#131C30; --muted:#5B6680; --border:#E6EAF2; --grid:rgba(47,91,234,.05);
+    --shadow:0 18px 50px rgba(19,28,48,.10); --shadow-sm:0 6px 18px rgba(19,28,48,.06);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Hanken Grotesk",system-ui,sans-serif;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:60px 60px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 22px 60px}
+  header{display:flex;align-items:center;gap:14px;margin:8px 0 6px}
+  .brand{font-weight:800;font-size:20px;letter-spacing:-.01em}
+  .brand .ai{color:var(--cobalt)}
+  .pill{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--cobalt-deep);background:rgba(47,91,234,.09);
+    border:1px solid rgba(47,91,234,.18);padding:7px 14px;border-radius:999px}
+  h1{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(28px,4vw,44px);line-height:1.05;margin:18px 0 8px;letter-spacing:-.01em}
+  h1 .hl{color:var(--cobalt)}
+  .sub{color:var(--muted);font-size:16px;max-width:680px;margin:0 0 26px}
+  .grid{display:grid;grid-template-columns:1fr 400px;gap:26px;align-items:start}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:22px}
+  .card h2{font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+  .row{display:grid;grid-template-columns:1fr 120px;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+  .row:last-child{border-bottom:0}
+  .row label{font-weight:600;font-size:15px}
+  .row label small{display:block;font-weight:500;color:var(--muted);font-size:12.5px;margin-top:2px}
+  .row .val{font-weight:800;font-size:18px;text-align:right;font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--cobalt);margin-top:8px}
+  select,input[type=number]{font:inherit;font-weight:700;padding:8px 10px;border:1.5px solid var(--border);border-radius:10px;width:100%;background:#fff}
+  .out{position:sticky;top:20px}
+  .big{font-family:"Fraunces",serif;font-weight:600;font-size:56px;line-height:1;letter-spacing:-.02em;margin:6px 0 2px}
+  .big.agent{color:var(--coral)} .big.eng{color:var(--gold)}
+  .lab{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+  .verdict{margin-top:16px;padding:14px 16px;border-radius:14px;font-weight:700;font-size:15px}
+  .verdict.win{background:rgba(16,185,129,.10);color:var(--mint-deep);border:1px solid rgba(16,185,129,.28)}
+  .verdict.lose{background:rgba(251,78,91,.09);color:#B72A36;border:1px solid rgba(251,78,91,.28)}
+  .bars{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+  .bar{display:grid;grid-template-columns:150px 1fr 90px;align-items:center;gap:10px;font-size:13px}
+  .bar .track{height:14px;background:var(--paper);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:8px;transition:width .25s}
+  .bar .n{font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+  .cap{margin-top:18px;padding-top:16px;border-top:1px dashed var(--border)}
+  .cap .big{font-size:40px;color:var(--cobalt)}
+  .note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .foot{margin-top:28px;font-size:13px;color:var(--muted);line-height:1.6}
+  .foot a{color:var(--cobalt);font-weight:700;text-decoration:none}
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+  .presets button{font:inherit;font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:999px;border:1.5px solid var(--border);background:#fff;cursor:pointer;color:var(--muted)}
+  .presets button.on{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="ai">AI</span> Tokenomics</div>
+    <div class="pill">Calculator 4 · coding agents</div>
+  </header>
+  <h1>Agent at <span class="hl">$12 an hour</span>, engineer at $100. Which one is actually cheaper?</h1>
+  <p class="sub">Dollars per hour is the wrong meter. A coding agent opens pull requests; only the merged ones count, and someone has to review every one. Slide the dials and watch the honest number, dollars per merged change, move.</p>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>The agent side</h2>
+        <div class="presets" id="presets">
+          <button data-p="sonnet" class="on">Sonnet 5 · $2/$10</button>
+          <button data-p="luna">GPT-5.6 Luna · $0.20/$1.20</button>
+          <button data-p="terra">GPT-5.6 Terra · $2/$12</button>
+          <button data-p="grok">Grok 4.6 · $2/$6</button>
+          <button data-p="ds">DeepSeek V4 Pro off-peak · $0.66/$1.98</button>
+          <button data-p="opus">Opus 5 · $5/$25</button>
+        </div>
+        <div class="row"><label>Input price <small>$ per million tokens</small></label><input type="number" id="pin" step="0.01" value="2"></div>
+        <div class="row"><label>Output price <small>$ per million tokens</small></label><input type="number" id="pout" step="0.01" value="10"></div>
+        <div class="row"><label>Tokens per active hour <small>input + output, millions; 0.5 to 2 is typical for a busy agent</small><input type="range" id="tph" min="0.2" max="4" step="0.1" value="1.0"></label><div class="val" id="tph-v">1.0M</div></div>
+        <div class="row"><label>Output share of tokens <small>agents are input heavy; 20 to 40 percent output is common</small><input type="range" id="oshare" min="5" max="60" step="1" value="30"></label><div class="val" id="oshare-v">30%</div></div>
+        <div class="row"><label>Active agent hours per person per week<input type="range" id="hrs" min="5" max="60" step="1" value="40"></label><div class="val" id="hrs-v">40</div></div>
+        <div class="row"><label>People on the agent<input type="range" id="ppl" min="1" max="50" step="1" value="3"></label><div class="val" id="ppl-v">3</div></div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>What the tokens buy</h2>
+        <div class="row"><label>Pull requests the agent opens per person per week<input type="range" id="prs" min="2" max="60" step="1" value="15"></label><div class="val" id="prs-v">15</div></div>
+        <div class="row"><label>Merge rate <small>agent authored PRs merged 84% overall, 45 to 83% by agent (arXiv 2509.14745)</small><input type="range" id="merge" min="20" max="95" step="1" value="67"></label><div class="val" id="merge-v">67%</div></div>
+        <div class="row"><label>Human review minutes per merged change <small>agent PRs take about 20% longer from first review to merge</small><input type="range" id="revm" min="5" max="120" step="5" value="60"></label><div class="val" id="revm-v">60 min</div></div>
+        <div class="row"><label>Review minutes per rejected PR<input type="range" id="revr" min="0" max="60" step="5" value="15"></label><div class="val" id="revr-v">15 min</div></div>
+        <div class="row"><label>Engineer cost per hour, fully loaded <small>US median base is about $64; loaded is closer to $100</small><input type="range" id="eng" min="30" max="250" step="5" value="100"></label><div class="val" id="eng-v">$100</div></div>
+        <div class="row"><label>Merged changes an engineer ships per week, unaided<input type="range" id="engch" min="2" max="25" step="1" value="8"></label><div class="val" id="engch-v">8</div></div>
+      </div>
+    </div>
+
+    <div class="card out">
+      <div class="lab">agent, dollars per merged change</div>
+      <div class="big agent" id="o-agent">$240</div>
+      <div class="note" id="o-agent-note">tokens $87 + review $150</div>
+      <div class="lab" style="margin-top:14px">engineer, dollars per merged change</div>
+      <div class="big eng" id="o-eng">$500</div>
+      <div class="verdict win" id="o-verdict">The agent wins by 2.1 to 1. Not 8 to 1.</div>
+      <div class="bars">
+        <div class="bar"><span>tokens</span><div class="track"><div class="fill" id="b-tok" style="background:var(--ink)"></div></div><span class="n" id="n-tok"></span></div>
+        <div class="bar"><span>review, merged</span><div class="track"><div class="fill" id="b-rev" style="background:var(--coral)"></div></div><span class="n" id="n-rev"></span></div>
+        <div class="bar"><span>review, rejected</span><div class="track"><div class="fill" id="b-rej" style="background:var(--coral);opacity:.6"></div></div><span class="n" id="n-rej"></span></div>
+        <div class="bar"><span>engineer alone</span><div class="track"><div class="fill" id="b-eng" style="background:var(--gold)"></div></div><span class="n" id="n-eng"></span></div>
+      </div>
+      <div class="cap">
+        <div class="lab">a per person monthly cap you can defend</div>
+        <div class="big" id="o-cap">$1,500</div>
+        <div class="note" id="o-cap-note">token spend at your dials, times 1.5 headroom. Uber landed on $1,500. Team per month: <b id="o-team"></b>.</div>
+      </div>
+      <div class="cap">
+        <div class="lab">the break-even merge rate</div>
+        <div class="big" id="o-be" style="color:var(--gold)">31%</div>
+        <div class="note">below this merge rate, at your review minutes, the agent costs more per merged change than the engineer.</div>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">Sources: Anthropic and provider price pages, August 2026; BLS OEWS software developer median; Forbes on Uber's agent spend and cap (May 2026); arXiv 2509.14745 on agent PR merge rates and review time. Illustrative model, not advice. More calculators: <a href="index.html#truecost">true cost at scale</a>, <a href="index.html#routing">routing</a>, <a href="index.html#margin">margin per customer</a>.</p>
+</div>
+<script>
+const P={sonnet:[2,10],luna:[0.2,1.2],terra:[2,12],grok:[2,6],ds:[0.66,1.98],opus:[5,25]};
+const $=id=>document.getElementById(id);
+const fmt=n=>"$"+Math.round(n).toLocaleString("en-US");
+document.querySelectorAll("#presets button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#presets button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+  $("pin").value=P[b.dataset.p][0]; $("pout").value=P[b.dataset.p][1]; calc();
+}));
+["pin","pout","tph","oshare","hrs","ppl","prs","merge","revm","revr","eng","engch"].forEach(id=>$(id).addEventListener("input",calc));
+function calc(){
+  const pin=+$("pin").value,pout=+$("pout").value,tph=+$("tph").value,os=+$("oshare").value/100,hrs=+$("hrs").value,ppl=+$("ppl").value;
+  const prs=+$("prs").value,mr=+$("merge").value/100,revm=+$("revm").value,revr=+$("revr").value,eng=+$("eng").value,engch=+$("engch").value;
+  $("tph-v").textContent=tph.toFixed(1)+"M"; $("oshare-v").textContent=Math.round(os*100)+"%"; $("hrs-v").textContent=hrs; $("ppl-v").textContent=ppl;
+  $("prs-v").textContent=prs; $("merge-v").textContent=Math.round(mr*100)+"%"; $("revm-v").textContent=revm+" min"; $("revr-v").textContent=revr+" min"; $("eng-v").textContent="$"+eng; $("engch-v").textContent=engch;
+  const dollarsPerHour=tph*((1-os)*pin+os*pout);
+  const tokWeek=dollarsPerHour*hrs;                       // per person
+  const merged=prs*mr, rejected=prs-merged;
+  const tokPerMerged=merged>0?tokWeek/merged:Infinity;
+  const revPerMerged=(revm/60)*eng;
+  const rejPerMerged=merged>0?(rejected*(revr/60)*eng)/merged:Infinity;
+  const agent=tokPerMerged+revPerMerged+rejPerMerged;
+  const engPer=(eng*40)/engch;
+  $("o-agent").textContent=isFinite(agent)?fmt(agent):"n/a";
+  $("o-agent-note").textContent=isFinite(agent)?`tokens ${fmt(tokPerMerged)} + review ${fmt(revPerMerged+rejPerMerged)} (agent hour ~${fmt(dollarsPerHour)})`:"no merged changes";
+  $("o-eng").textContent=fmt(engPer);
+  const v=$("o-verdict");
+  if(isFinite(agent)&&agent<engPer){const r=(engPer/agent).toFixed(1);v.className="verdict win";v.textContent=`The agent wins by ${r} to 1 per merged change. Not ${Math.round(eng/Math.max(dollarsPerHour,0.01))} to 1.`}
+  else{v.className="verdict lose";v.textContent="At these dials the agent costs more per merged change than the engineer. Merge rate and review minutes are your two levers."}
+  const mx=Math.max(agent,engPer,1);
+  const set=(b,n,val)=>{$(b).style.width=(isFinite(val)?Math.min(100,val/mx*100):100)+"%";$(n).textContent=isFinite(val)?fmt(val):"n/a"};
+  set("b-tok","n-tok",tokPerMerged); set("b-rev","n-rev",revPerMerged); set("b-rej","n-rej",rejPerMerged); set("b-eng","n-eng",engPer);
+  const monthTok=tokWeek*4.33; $("o-cap").textContent=fmt(Math.ceil(monthTok*1.5/50)*50); $("o-team").textContent=fmt(monthTok*ppl);
+  // break-even merge rate: solve agent(mr)=engPer for mr in (0,1]
+  let be=null; for(let m=0.05;m<=1.0001;m+=0.005){const md=prs*m,rj=prs-md;const a=tokWeek/md+revPerMerged+(rj*(revr/60)*eng)/md;if(a<=engPer){be=m;break}}
+  $("o-be").textContent=be?Math.round(be*100)+"%":"above 100%";
+}
+calc();
+</script>
+</body>
+</html>

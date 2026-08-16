@@ -13,9 +13,9 @@
   gtag('config', 'G-H6NE897M77');
 </script>
 <title>AI Cost Calculators · AI Tokenomics</title>
-<meta name="description" content="Three free AI cost calculators from the AI Tokenomics videos: the true cost of a demo at production scale, the routing spread, and margin per customer." />
+<meta name="description" content="Four free AI cost calculators from the AI Tokenomics videos: the true cost of a demo at production scale, the routing spread, margin per customer, and what a coding agent really costs per merged change." />
 <meta property="og:title" content="AI Cost Calculators · AI Tokenomics" />
-<meta property="og:description" content="Tokens are the new cloud bill. Three calculators, one per video: true cost, routing, margin." />
+<meta property="og:description" content="Tokens are the new cloud bill. Four calculators, one per video: true cost, routing, margin, coding agents." />
 <meta property="og:type" content="website" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,10 +48,12 @@
     <button class="tab on" data-p="truecost">True Cost<small>your $2 demo, at scale</small></button>
     <button class="tab" data-p="routing">Routing<small>the 40-85% lever</small></button>
     <button class="tab" data-p="margin">Margin<small>cost per customer</small></button>
+    <button class="tab" data-p="agents">Coding agents<small>$ per merged change</small></button>
   </nav>
   <iframe class="pane on" id="p-truecost" src="truecost.html" title="True Cost Calculator"></iframe>
   <iframe class="pane" id="p-routing" data-src="routing.html" title="Routing Calculator"></iframe>
   <iframe class="pane" id="p-margin" data-src="margin.html" title="Margin Calculator"></iframe>
+  <iframe class="pane" id="p-agents" data-src="agents.html" title="Coding Agent Cost Calculator"></iframe>
 <script>
   const tabs=document.querySelectorAll(".tab");
   function show(p){
@@ -66,7 +68,7 @@
   }
   tabs.forEach(t=>t.addEventListener("click",()=>show(t.dataset.p)));
   const h=location.hash.slice(1);
-  if(["truecost","routing","margin"].includes(h))show(h);
+  if(["truecost","routing","margin","agents"].includes(h))show(h);
 </script>
 </body>
 </html>
