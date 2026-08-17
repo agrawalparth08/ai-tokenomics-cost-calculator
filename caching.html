@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Prompt Caching Calculator · AI Tokenomics</title>
+<meta name="description" content="Prompt caching only saves money if your calls land close enough together. Find your break-even read count, see the trap cases where caching costs more, and check your own numbers." />
+<meta property="og:title" content="Prompt Caching Calculator · AI Tokenomics" />
+<meta property="og:description" content="A cache write fee that never gets read back is money burned. Slide your call pattern and see the honest number." />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cobalt:#2F5BEA; --cobalt-deep:#1E40C8; --mint:#10B981; --mint-deep:#0E9F70;
+    --gold:#E0A12B; --coral:#FB4E5B; --paper:#FBFCFE; --surface:#FFFFFF;
+    --ink:#131C30; --muted:#5B6680; --border:#E6EAF2; --grid:rgba(47,91,234,.05);
+    --shadow:0 18px 50px rgba(19,28,48,.10); --shadow-sm:0 6px 18px rgba(19,28,48,.06);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Hanken Grotesk",system-ui,sans-serif;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:60px 60px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 22px 60px}
+  header{display:flex;align-items:center;gap:14px;margin:8px 0 6px}
+  .brand{font-weight:800;font-size:20px;letter-spacing:-.01em}
+  .brand .ai{color:var(--cobalt)}
+  .pill{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--cobalt-deep);background:rgba(47,91,234,.09);
+    border:1px solid rgba(47,91,234,.18);padding:7px 14px;border-radius:999px}
+  h1{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(28px,4vw,44px);line-height:1.05;margin:18px 0 8px;letter-spacing:-.01em}
+  h1 .hl{color:var(--cobalt)}
+  .sub{color:var(--muted);font-size:16px;max-width:680px;margin:0 0 26px}
+  .grid{display:grid;grid-template-columns:1fr 400px;gap:26px;align-items:start}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:22px}
+  .card h2{font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+  .row{display:grid;grid-template-columns:1fr 120px;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+  .row:last-child{border-bottom:0}
+  .row label{font-weight:600;font-size:15px}
+  .row label small{display:block;font-weight:500;color:var(--muted);font-size:12.5px;margin-top:2px}
+  .row .val{font-weight:800;font-size:18px;text-align:right;font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--cobalt);margin-top:8px}
+  select,input[type=number]{font:inherit;font-weight:700;padding:8px 10px;border:1.5px solid var(--border);border-radius:10px;width:100%;background:#fff}
+  .out{position:sticky;top:20px}
+  .big{font-family:"Fraunces",serif;font-weight:600;font-size:56px;line-height:1;letter-spacing:-.02em;margin:6px 0 2px}
+  .big.agent{color:var(--coral)} .big.eng{color:var(--gold)}
+  .lab{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+  .verdict{margin-top:16px;padding:14px 16px;border-radius:14px;font-weight:700;font-size:15px}
+  .verdict.win{background:rgba(16,185,129,.10);color:var(--mint-deep);border:1px solid rgba(16,185,129,.28)}
+  .verdict.lose{background:rgba(251,78,91,.09);color:#B72A36;border:1px solid rgba(251,78,91,.28)}
+  .bars{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+  .bar{display:grid;grid-template-columns:150px 1fr 90px;align-items:center;gap:10px;font-size:13px}
+  .bar .track{height:14px;background:var(--paper);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+  .bar .fill{height:100%;border-radius:8px;transition:width .25s}
+  .bar .n{font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+  .cap{margin-top:18px;padding-top:16px;border-top:1px dashed var(--border)}
+  .cap .big{font-size:40px;color:var(--cobalt)}
+  .note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .foot{margin-top:28px;font-size:13px;color:var(--muted);line-height:1.6}
+  .foot a{color:var(--cobalt);font-weight:700;text-decoration:none}
+  .presets{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}
+  .presets button{font:inherit;font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:999px;border:1.5px solid var(--border);background:#fff;cursor:pointer;color:var(--muted)}
+  .presets button.on{background:var(--cobalt);border-color:var(--cobalt);color:#fff}
+  .traps{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+  .trap{padding:14px 16px;border-radius:14px;border:1px solid var(--border);background:var(--paper)}
+  .trap b{display:block;font-size:14.5px;margin-bottom:4px}
+  .trap span{font-size:13.5px;color:var(--muted);line-height:1.5}
+  .custom-row{display:none}
+  .custom-row.show{display:grid}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="ai">AI</span> Tokenomics</div>
+    <div class="pill">Calculator 5 · prompt caching</div>
+  </header>
+  <h1>Prompt caching only pays off if your calls land <span class="hl">close enough together</span>.</h1>
+  <p class="sub">Caching means the model stores a prompt so it does not have to re-read the whole thing next time. The first call writes the cache, and that costs extra. Every call after that reads the cache, and that costs less than a normal input. But if the cache expires before your next call shows up, you paid the write fee for nothing. Slide your own numbers and see which side you land on.</p>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>Model and prices</h2>
+        <div class="presets" id="presets">
+          <button data-p="sonnet" class="on">Claude Sonnet 5</button>
+          <button data-p="opus">Claude Opus 5</button>
+          <button data-p="terra">GPT-5.6 Terra</button>
+          <button data-p="luna">OpenAI Luna</button>
+          <button data-p="gemini">Gemini 3.7 Flash</button>
+          <button data-p="deepseek">DeepSeek V4 Flash</button>
+          <button data-p="grok">Grok 4.6</button>
+          <button data-p="custom">Custom</button>
+        </div>
+        <div class="row"><label>Input price <small>$ per million tokens, a normal call with no cache</small></label><input type="number" id="pin" step="0.001" value="2"></div>
+        <div class="row"><label>Cache read price <small>$ per million tokens, what you pay when the cache is still warm</small></label><input type="number" id="pread" step="0.001" value="0.20"></div>
+        <div class="row" id="write-row"><label>Cache write price <small>$ per million tokens, the one time fee to store the prompt</small></label><input type="number" id="pwrite" step="0.001" value="2.50"></div>
+        <div class="row" id="write-choice-row" style="display:none"><label>Cache commitment <small>Sonnet 5 offers a cheap 5 minute cache or a pricier 1 hour cache</small>
+          <select id="writeChoice">
+            <option value="5">5 minute cache, $2.50 write</option>
+            <option value="60">1 hour cache, $4.00 write</option>
+          </select></label><div class="val"></div></div>
+        <div class="row" id="storage-row" style="display:none"><label>Cache storage rent <small>$ per million tokens held, per hour, charged whether or not you re-read it</small></label><input type="number" id="pstorage" step="0.01" value="0.50"></div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>Your call pattern</h2>
+        <div class="row"><label>Prompt size <small>tokens in the part you want cached, roughly 4 characters per token</small><input type="range" id="tokens" min="1000" max="200000" step="1000" value="10000"></label><div class="val" id="tokens-v">10,000</div></div>
+        <div class="row" id="calls-row"><label>Calls in this pattern<input type="range" id="calls" min="1" max="1000" step="1" value="3"></label><div class="val" id="calls-v">3</div></div>
+        <div class="row" id="gap-row"><label>Minutes between calls <small>how long you typically wait before the next call</small><input type="range" id="gap" min="0" max="60" step="1" value="1"></label><div class="val" id="gap-v">1 min</div></div>
+        <div class="row" id="window-row"><label>Cache window <small>how long the cache stays warm before it expires</small>
+          <select id="window">
+            <option value="5">5 minutes</option>
+            <option value="30">30 minutes</option>
+            <option value="60">60 minutes (1 hour)</option>
+          </select></label><div class="val"></div></div>
+        <div class="row custom-row" id="turns-row"><label>Chat growth, turns <small>optional: how many turns a growing conversation runs for</small><input type="range" id="turns" min="1" max="50" step="1" value="1"></label><div class="val" id="turns-v">off</div></div>
+        <div class="row" id="hours-row" style="display:none"><label>Hours held <small>how long you keep an explicit cache alive, Gemini style</small><input type="range" id="hours" min="0" max="72" step="1" value="24"></label><div class="val" id="hours-v">24 h</div></div>
+        <div class="row" id="queries-row" style="display:none"><label>Queries against the held document<input type="range" id="queries" min="1" max="200" step="1" value="5"></label><div class="val" id="queries-v">5</div></div>
+      </div>
+    </div>
+
+    <div class="card out">
+      <div class="lab">without caching</div>
+      <div class="big eng" id="o-without">$0.060</div>
+      <div class="lab" style="margin-top:14px">with caching</div>
+      <div class="big agent" id="o-with">$0.029</div>
+      <div class="verdict win" id="o-verdict">Caching saves you $0.031.</div>
+
+      <div class="bars">
+        <div class="bar"><span>without</span><div class="track"><div class="fill" id="b-without" style="background:var(--gold)"></div></div><span class="n" id="n-without"></span></div>
+        <div class="bar"><span>with caching</span><div class="track"><div class="fill" id="b-with" style="background:var(--coral)"></div></div><span class="n" id="n-with"></span></div>
+      </div>
+
+      <div class="cap">
+        <div class="lab">break-even reads</div>
+        <div class="big" id="o-be" style="color:var(--cobalt)">14</div>
+        <div class="note" id="o-be-note">The write fee only pays for itself once you read the cache enough times. Break even is the write price divided by the gap between input price and read price: write ÷ (input − read).</div>
+      </div>
+
+      <div class="cap">
+        <div class="lab">per turn cost, chat growth mode</div>
+        <div class="big" id="o-turn" style="font-size:34px;color:var(--ink)">off</div>
+        <div class="note" id="o-turn-note">Turn on "chat growth" turns above to see whether your per turn bill is quietly climbing as the conversation gets longer.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:22px">
+    <h2>Three traps</h2>
+    <div class="traps">
+      <div class="trap">
+        <b>1. The slow bot trap</b>
+        <span>If you wait too long between calls, the cache expires before you come back. Every call pays the write fee and none of them get the cheap read price. Check yourself: is your gap between calls, set above, bigger than your cache window? If yes, you are in this trap right now.</span>
+      </div>
+      <div class="trap">
+        <b>2. The storage rent trap</b>
+        <span>Some caches, like Gemini's, charge rent for every hour you hold them, whether you read them again or not. Check yourself: multiply hours held by the storage rate. If that number is bigger than what the cheap reads actually saved you, you are paying to store something you are not using.</span>
+      </div>
+      <div class="trap">
+        <b>3. Context creep trap</b>
+        <span>In a growing chat, the whole conversation so far has to be re-cached and re-read on every single turn. The prefix gets bigger each turn, so the bill per turn quietly climbs even though nothing about your usage pattern changed. Check yourself: track your cost per turn over a long chat. If it is rising, this is why.</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="foot">Sources: Anthropic pricing docs, anthropic.com, Aug 2026; OpenAI pricing docs, openai.com, Aug 2026; Google AI / Gemini API pricing docs, ai.google.dev, Aug 2026; DeepSeek API docs, api-docs.deepseek.com, Aug 2026; xAI / Grok docs, docs.x.ai, Aug 2026. Illustrative model, not advice. More calculators: <a href="index.html#truecost">true cost at scale</a>, <a href="index.html#routing">routing</a>, <a href="index.html#margin">margin per customer</a>, <a href="index.html#agents">coding agents</a>.</p>
+</div>
+<script>
+// Preset table: [input, cacheRead, cacheWrite5min, cacheWrite1hr(optional), storageRatePerHourOrNull, defaultWindowMin]
+const P={
+  sonnet:  {pin:2,     pread:0.20,   pwrite5:2.50, pwrite60:4.00, storage:null, window:5},
+  opus:    {pin:5,     pread:0.50,   pwrite5:6.25, pwrite60:null, storage:null, window:5},
+  terra:   {pin:2,     pread:0.20,   pwrite5:0,    pwrite60:null, storage:null, window:30},
+  luna:    {pin:0.20,  pread:0.02,   pwrite5:0,    pwrite60:null, storage:null, window:30},
+  gemini:  {pin:0.75,  pread:0.075,  pwrite5:0,    pwrite60:null, storage:0.50, window:60},
+  deepseek:{pin:0.22,  pread:0.007,  pwrite5:0,    pwrite60:null, storage:null, window:5},
+  grok:    {pin:2,     pread:0.50,   pwrite5:0,    pwrite60:null, storage:null, window:5},
+  custom:  {pin:2,     pread:0.20,   pwrite5:2.50, pwrite60:null, storage:null, window:5}
+};
+const $=id=>document.getElementById(id);
+const money=n=>{
+  if(!isFinite(n))return "n/a";
+  const abs=Math.abs(n);
+  const d=abs<1?3:2;
+  return (n<0?"-$":"$")+abs.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+};
+
+let currentPreset="sonnet";
+document.querySelectorAll("#presets button").forEach(b=>b.addEventListener("click",()=>{
+  document.querySelectorAll("#presets button").forEach(x=>x.classList.remove("on")); b.classList.add("on");
+  currentPreset=b.dataset.p;
+  applyPreset();
+}));
+
+function applyPreset(){
+  const p=P[currentPreset];
+  const isGemini=currentPreset==="gemini";
+  const isSonnet=currentPreset==="sonnet";
+  const isCustom=currentPreset==="custom";
+
+  $("pin").value=p.pin;
+  $("pread").value=p.pread;
+  $("pwrite").value=p.pwrite5;
+  $("pstorage").value=p.storage||0.50;
+  $("window").value=String(p.window);
+
+  $("pin").readOnly=!isCustom;
+  $("pread").readOnly=!isCustom;
+  $("pwrite").readOnly=!isCustom;
+
+  $("write-choice-row").style.display=isSonnet?"grid":"none";
+  $("writeChoice").value="5";
+  $("write-row").style.display=isGemini?"none":"grid";
+  $("storage-row").style.display=isGemini?"grid":"none";
+
+  $("calls-row").style.display=isGemini?"none":"grid";
+  $("gap-row").style.display=isGemini?"none":"grid";
+  $("window-row").style.display=isGemini?"none":"grid";
+  $("hours-row").style.display=isGemini?"grid":"none";
+  $("queries-row").style.display=isGemini?"grid":"none";
+
+  calc();
+}
+
+$("writeChoice").addEventListener("change",()=>{
+  const v=$("writeChoice").value;
+  $("pwrite").value=v==="60"?P.sonnet.pwrite60:P.sonnet.pwrite5;
+  $("window").value=v==="60"?"60":"5";
+  calc();
+});
+
+["pin","pread","pwrite","pstorage","tokens","calls","gap","window","turns","hours","queries"].forEach(id=>{
+  $(id).addEventListener("input",calc);
+  $(id).addEventListener("change",calc);
+});
+
+function windowLabel(min){
+  if(min==5)return "5 minute";
+  if(min==30)return "30 minute";
+  if(min==60)return "1 hour";
+  return min+" minute";
+}
+
+function calc(){
+  const pin=+$("pin").value, pread=+$("pread").value, pwrite=+$("pwrite").value, pstorage=+$("pstorage").value;
+  const tokens=+$("tokens").value, calls=+$("calls").value, gap=+$("gap").value, windowMin=+$("window").value;
+  const turns=+$("turns").value, hours=+$("hours").value, queries=+$("queries").value;
+
+  $("tokens-v").textContent=tokens.toLocaleString("en-US");
+  $("calls-v").textContent=calls;
+  $("gap-v").textContent=gap+" min";
+  $("turns-v").textContent=turns>1?turns+" turns":"off";
+  $("hours-v").textContent=hours+" h";
+  $("queries-v").textContent=queries;
+
+  const isGemini=currentPreset==="gemini";
+  let withoutCaching, withCaching, trapped=false;
+
+  if(isGemini){
+    // storage mode: pay rent for every hour held, plus a cheap read on every query, no write fee
+    withoutCaching = queries*tokens*pin/1e6;
+    withCaching = (hours*tokens*pstorage)/1e6 + queries*tokens*pread/1e6;
+  } else if(gap<=windowMin){
+    // chain mode: first call writes the cache, every call after that is a cheap read
+    withoutCaching = calls*tokens*pin/1e6;
+    withCaching = (tokens*pwrite)/1e6 + (calls-1)*tokens*pread/1e6;
+  } else {
+    // trap mode: the cache always expires before the next call shows up, so every call pays the write fee again
+    trapped=true;
+    withoutCaching = calls*tokens*pin/1e6;
+    withCaching = calls*tokens*pwrite/1e6;
+  }
+
+  $("o-without").textContent=money(withoutCaching);
+  $("o-with").textContent=money(withCaching);
+  const diff=withoutCaching-withCaching;
+  const v=$("o-verdict");
+  if(isGemini && withCaching>withoutCaching){
+    v.className="verdict lose";
+    v.textContent=`Caching costs you ${money(withCaching-withoutCaching)} extra. Storage rent over ${hours} hours ate the savings from the cheap reads.`;
+  } else if(!isGemini && trapped){
+    v.className="verdict lose";
+    v.textContent=`Caching costs you ${money(withCaching-withoutCaching)} extra. Your calls are ${gap} minutes apart, and the ${windowLabel(windowMin)} window keeps expiring before the next call arrives.`;
+  } else if(diff>=0){
+    v.className="verdict win";
+    v.textContent=`Caching saves you ${money(diff)}.`;
+  } else {
+    v.className="verdict lose";
+    v.textContent=`Caching costs you ${money(-diff)} extra.`;
+  }
+
+  const mx=Math.max(withoutCaching,withCaching,0.001);
+  const set=(b,n,val)=>{$(b).style.width=Math.min(100,val/mx*100)+"%";$(n).textContent=money(val)};
+  set("b-without","n-without",withoutCaching);
+  set("b-with","n-with",withCaching);
+
+  const be=pwrite/(pin-pread);
+  $("o-be").textContent=isFinite(be)&&be>0?Math.ceil(be):"n/a";
+  $("o-be-note").textContent=`The write fee only pays for itself once you read the cache enough times. Break even is the write price divided by the gap between input price and read price: write ÷ (input − read) = ${money(pwrite)} ÷ (${money(pin)} − ${money(pread)}) = about ${isFinite(be)?be.toFixed(1):"n/a"} reads.`;
+
+  if(turns>1 && !isGemini){
+    // context creep: each turn re-sends and re-caches the whole growing prefix (tokens grows by "tokens" per turn)
+    const perTurnCost=n=>{
+      const prefixTokens=tokens*n;
+      // turn 1 always writes fresh (nothing cached yet); every later turn reads the old prefix and writes the new bit
+      return n===1 ? prefixTokens*pwrite/1e6 : prefixTokens*pread/1e6 + tokens*pwrite/1e6;
+    };
+    const first=perTurnCost(1), last=perTurnCost(turns);
+    $("o-turn").textContent=money(last)+" /turn";
+    $("o-turn").style.color=last>first*1.5?"var(--coral)":"var(--ink)";
+    $("o-turn-note").textContent=`Turn 1 costs about ${money(first)}. By turn ${turns}, with the whole growing conversation re-cached each time, a turn costs about ${money(last)}. ${last>first*1.2?"That climb is context creep: the prefix got bigger, so the bill did too.":"Still fairly flat at this turn count."}`;
+  } else {
+    $("o-turn").textContent="off";
+    $("o-turn").style.color="var(--ink)";
+    $("o-turn-note").textContent='Turn on "chat growth" turns above to see whether your per turn bill is quietly climbing as the conversation gets longer.';
+  }
+}
+applyPreset();
+</script>
+</body>
+</html>
