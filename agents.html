@@ -135,7 +135,7 @@
       <div class="cap">
         <div class="lab">a per person monthly cap you can defend</div>
         <div class="big" id="o-cap">$1,500</div>
-        <div class="note" id="o-cap-note">token spend at your dials, times 1.5 headroom. Uber landed on $1,500. Team per month: <b id="o-team"></b>.</div>
+        <div class="note" id="o-cap-note">token spend at your settings, times 1.5 headroom. Uber landed on $1,500. Team per month: <b id="o-team"></b>.</div>
       </div>
       <div class="cap">
         <div class="lab">the break-even merge rate</div>
@@ -176,7 +176,7 @@ function calc(){
   $("o-eng").textContent=fmt(engPer);
   const v=$("o-verdict");
   if(isFinite(agent)&&agent<engPer){const r=(engPer/agent).toFixed(1);v.className="verdict win";v.textContent=`The agent wins by ${r} to 1 per merged change. Not ${Math.round(eng/Math.max(dollarsPerHour,0.01))} to 1.`}
-  else{v.className="verdict lose";v.textContent="At these dials the agent costs more per merged change than the engineer. Merge rate and review minutes are your two levers."}
+  else{v.className="verdict lose";v.textContent="At these settings the agent costs more per merged change than the engineer. Merge rate and review minutes are your two levers."}
   const mx=Math.max(agent,engPer,1);
   const set=(b,n,val)=>{$(b).style.width=(isFinite(val)?Math.min(100,val/mx*100):100)+"%";$(n).textContent=isFinite(val)?fmt(val):"n/a"};
   set("b-tok","n-tok",tokPerMerged); set("b-rev","n-rev",revPerMerged); set("b-rej","n-rej",rejPerMerged); set("b-eng","n-eng",engPer);
