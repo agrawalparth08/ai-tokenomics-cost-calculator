@@ -13,9 +13,9 @@
   gtag('config', 'G-H6NE897M77');
 </script>
 <title>AI Cost Calculators · AI Tokenomics</title>
-<meta name="description" content="Five free AI cost calculators from the AI Tokenomics videos: the true cost of a demo at production scale, the routing spread, margin per customer, what a coding agent really costs per merged change, and whether prompt caching saves or costs you money." />
+<meta name="description" content="Eight free AI cost calculators from the AI Tokenomics videos: the true cost of a demo at production scale, the routing spread, margin per customer, what a coding agent really costs per merged change, whether prompt caching saves or costs you money, the context window tax, price per point of intelligence, and subscription to seat cost." />
 <meta property="og:title" content="AI Cost Calculators · AI Tokenomics" />
-<meta property="og:description" content="Tokens are the new cloud bill. Five calculators, one per video: true cost, routing, margin, coding agents, prompt caching." />
+<meta property="og:description" content="Tokens are the new cloud bill. Eight calculators: true cost, routing, margin, coding agents, prompt caching, context window tax, price per point of intelligence, subscription to seat cost." />
 <meta property="og:type" content="website" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -50,12 +50,18 @@
     <button class="tab" data-p="margin">Margin<small>cost per customer</small></button>
     <button class="tab" data-p="agents">Coding agents<small>$ per merged change</small></button>
     <button class="tab" data-p="caching">Caching<small>save or cost you money?</small></button>
+    <button class="tab" data-p="context">Context tax<small>what re-sending costs</small></button>
+    <button class="tab" data-p="intelligence">Price / point<small>cheap isn't cheap</small></button>
+    <button class="tab" data-p="seat">Seat cost<small>$200 seat, $2,000 bill</small></button>
   </nav>
   <iframe class="pane on" id="p-truecost" src="truecost.html" title="True Cost Calculator"></iframe>
   <iframe class="pane" id="p-routing" data-src="routing.html" title="Routing Calculator"></iframe>
   <iframe class="pane" id="p-margin" data-src="margin.html" title="Margin Calculator"></iframe>
   <iframe class="pane" id="p-agents" data-src="agents.html" title="Coding Agent Cost Calculator"></iframe>
   <iframe class="pane" id="p-caching" data-src="caching.html" title="Prompt Caching Calculator"></iframe>
+  <iframe class="pane" id="p-context" data-src="context.html" title="Context Window Tax Calculator"></iframe>
+  <iframe class="pane" id="p-intelligence" data-src="intelligence.html" title="Price Per Point of Intelligence Calculator"></iframe>
+  <iframe class="pane" id="p-seat" data-src="seat.html" title="Subscription to Seat Cost Calculator"></iframe>
 <script>
   const tabs=document.querySelectorAll(".tab");
   function show(p){
@@ -70,7 +76,7 @@
   }
   tabs.forEach(t=>t.addEventListener("click",()=>show(t.dataset.p)));
   const h=location.hash.slice(1);
-  if(["truecost","routing","margin","agents","caching"].includes(h))show(h);
+  if(["truecost","routing","margin","agents","caching","context","intelligence","seat"].includes(h))show(h);
 </script>
 </body>
 </html>

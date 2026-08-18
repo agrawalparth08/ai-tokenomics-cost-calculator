@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Subscription To Seat Cost Calculator · AI Tokenomics</title>
+<meta name="description" content="A flat $200 seat looks predictable until one heavy user's usage turns it into a $2,000 bill. See the arithmetic, and what a per person cap does about it." />
+<meta property="og:title" content="Subscription To Seat Cost Calculator · AI Tokenomics" />
+<meta property="og:description" content="Flat seat price, plus usage. Find the exact usage level where a $200 seat becomes a $2,000 one." />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cobalt:#2F5BEA; --cobalt-deep:#1E40C8; --mint:#10B981; --mint-deep:#0E9F70;
+    --gold:#E0A12B; --coral:#FB4E5B; --paper:#FBFCFE; --surface:#FFFFFF;
+    --ink:#131C30; --muted:#5B6680; --border:#E6EAF2; --grid:rgba(47,91,234,.05);
+    --shadow:0 18px 50px rgba(19,28,48,.10); --shadow-sm:0 6px 18px rgba(19,28,48,.06);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Hanken Grotesk",system-ui,sans-serif;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:60px 60px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 22px 60px}
+  header{display:flex;align-items:center;gap:14px;margin:8px 0 6px}
+  .brand{font-weight:800;font-size:20px;letter-spacing:-.01em}
+  .brand .ai{color:var(--cobalt)}
+  .pill{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--cobalt-deep);background:rgba(47,91,234,.09);
+    border:1px solid rgba(47,91,234,.18);padding:7px 14px;border-radius:999px}
+  h1{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(28px,4vw,44px);line-height:1.05;margin:18px 0 8px;letter-spacing:-.01em}
+  h1 .hl{color:var(--cobalt)}
+  .sub{color:var(--muted);font-size:16px;max-width:680px;margin:0 0 26px}
+  .grid{display:grid;grid-template-columns:1fr 400px;gap:26px;align-items:start}
+  @media(max-width:900px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:22px}
+  .card h2{font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+  .row{display:grid;grid-template-columns:1fr 120px;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+  .row:last-child{border-bottom:0}
+  .row label{font-weight:600;font-size:15px}
+  .row label small{display:block;font-weight:500;color:var(--muted);font-size:12.5px;margin-top:2px}
+  .row .val{font-weight:800;font-size:18px;text-align:right;font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--cobalt);margin-top:8px}
+  select,input[type=number]{font:inherit;font-weight:700;padding:8px 10px;border:1.5px solid var(--border);border-radius:10px;width:100%;background:#fff}
+  .out{position:sticky;top:20px}
+  .big{font-family:"Fraunces",serif;font-weight:600;font-size:56px;line-height:1;letter-spacing:-.02em;margin:6px 0 2px}
+  .big.agent{color:var(--coral)} .big.eng{color:var(--gold)}
+  .lab{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+  .verdict{margin-top:16px;padding:14px 16px;border-radius:14px;font-weight:700;font-size:15px}
+  .verdict.win{background:rgba(16,185,129,.10);color:var(--mint-deep);border:1px solid rgba(16,185,129,.28)}
+  .verdict.lose{background:rgba(251,78,91,.09);color:#B72A36;border:1px solid rgba(251,78,91,.28)}
+  .cap{margin-top:18px;padding-top:16px;border-top:1px dashed var(--border)}
+  .cap .big{font-size:40px;color:var(--cobalt)}
+  .note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .foot{margin-top:28px;font-size:13px;color:var(--muted);line-height:1.6}
+  .foot a{color:var(--cobalt);font-weight:700;text-decoration:none}
+  .illustrative{font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--gold);background:rgba(224,161,43,.12);border:1px solid rgba(224,161,43,.28);padding:3px 8px;border-radius:999px;margin-left:8px}
+  table{width:100%;border-collapse:collapse;font-size:14px;margin-top:8px}
+  th,td{padding:9px 8px;border-bottom:1px solid var(--border);text-align:right}
+  th:first-child,td:first-child{text-align:left}
+  th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="ai">AI</span> Tokenomics</div>
+    <div class="pill">Calculator 8 · subscription to seat cost</div>
+  </header>
+  <h1>The <span class="hl">$200 seat</span> was never the real price. Usage was always billed underneath it.</h1>
+  <p class="sub">A flat seat price feels like a fixed cost. It is not, if usage is billed separately once you go over what the seat covers. One heavy user can turn a $200 a month seat into a $2,000 a month bill without anyone changing the plan. Slide your own numbers, including a per person cap, and see where you land.</p>
+
+  <div class="grid">
+    <div>
+      <div class="card">
+        <h2>The seat</h2>
+        <div class="row"><label>Seat price <small>$ per person, per month</small><input type="range" id="seat" min="0" max="500" step="5" value="200"></label><div class="val" id="seat-v">$200</div></div>
+        <div class="row"><label>People on the plan<input type="range" id="people" min="1" max="500" step="1" value="25"></label><div class="val" id="people-v">25</div></div>
+        <div class="row"><label>Overage / API price <small>$ per million tokens, once usage runs past what the seat itself covers</small></label><input type="number" id="price" step="0.1" value="10"></div>
+        <div class="row"><label>Per person monthly cap <small>0 means no cap</small><input type="range" id="cap" min="0" max="3000" step="25" value="500"></label><div class="val" id="cap-v">$500</div></div>
+      </div>
+
+      <div class="card" style="margin-top:18px">
+        <h2>Average tokens per person, per month <span class="illustrative">illustrative</span></h2>
+        <p class="note" style="margin-top:0">These three tiers are illustrative starting points, not measured data. Edit them to match what you actually see in your own usage logs.</p>
+        <div class="row"><label>Light user<input type="range" id="light" min="0" max="20000000" step="100000" value="3000000"></label><div class="val" id="light-v">3.0M</div></div>
+        <div class="row"><label>Typical user<input type="range" id="typical" min="0" max="50000000" step="500000" value="20000000"></label><div class="val" id="typical-v">20.0M</div></div>
+        <div class="row"><label>Heavy user<input type="range" id="heavy" min="0" max="300000000" step="1000000" value="150000000"></label><div class="val" id="heavy-v">150.0M</div></div>
+      </div>
+    </div>
+
+    <div class="card out">
+      <div class="lab">where a $200 seat becomes a $2,000 bill</div>
+      <div class="big agent" id="o-threshold">180.0M tokens/mo</div>
+      <div class="note" id="o-threshold-note">Formula: tokens = (target bill − seat price) × 1,000,000 ÷ price per million. At your numbers, ($2,000 − $200) × 1,000,000 ÷ $10 = 180,000,000 tokens in a month, from one person.</div>
+
+      <div class="cap">
+        <div class="lab">team bill, no cap</div>
+        <div class="big eng" id="o-team-nocap">$42,500</div>
+        <div class="lab" style="margin-top:14px">team bill, with cap</div>
+        <div class="big" id="o-team-cap" style="color:var(--mint-deep)">$17,500</div>
+        <div class="verdict win" id="o-verdict">The cap saves the team $25,000 this month, if everyone is a heavy user.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:22px">
+    <h2>Bill per person, by tier</h2>
+    <div style="overflow-x:auto">
+    <table id="tbl">
+      <thead><tr><th>Tier</th><th>Tokens / mo</th><th>Usage cost</th><th>Bill, no cap</th><th>Bill, with cap</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    </div>
+    <p class="note">Bill per person = seat price + usage cost, where usage cost = tokens × overage price ÷ 1,000,000. With a cap, usage cost is capped at the per person monthly cap you set above; the seat price itself is never capped. Team totals multiply the tier bill by the number of people on the plan, as if everyone on the team used that tier that month.</p>
+  </div>
+
+  <p class="foot">Sources: Anthropic, OpenAI, Google, DeepSeek and xAI pricing docs, Aug 2026, for the token price you enter above. Seat price, tier tokens and cap are inputs you control; the tiers above are illustrative, not measured. Illustrative model, not advice. More calculators: <a href="index.html#truecost">true cost at scale</a>, <a href="index.html#routing">routing</a>, <a href="index.html#margin">margin per customer</a>, <a href="index.html#agents">coding agents</a>, <a href="index.html#caching">prompt caching</a>, <a href="index.html#context">context window tax</a>, <a href="index.html#intelligence">price per point of intelligence</a>.</p>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const money=n=>{
+  if(!isFinite(n))return "n/a";
+  const abs=Math.abs(n);
+  return (n<0?"-$":"$")+Math.round(abs).toLocaleString("en-US");
+};
+const fmtTok=n=>(n/1e6).toFixed(1)+"M";
+
+["seat","people","price","cap","light","typical","heavy"].forEach(id=>$(id).addEventListener("input",calc));
+
+function billFor(seatPrice,tokens,price,cap){
+  const usage=tokens*price/1e6;
+  const noCap=seatPrice+usage;
+  const withCap=cap>0?seatPrice+Math.min(usage,cap):noCap;
+  return {usage,noCap,withCap};
+}
+
+function calc(){
+  const seatPrice=+$("seat").value, people=+$("people").value, price=+$("price").value, cap=+$("cap").value;
+  const light=+$("light").value, typical=+$("typical").value, heavy=+$("heavy").value;
+
+  $("seat-v").textContent="$"+seatPrice;
+  $("people-v").textContent=people;
+  $("cap-v").textContent=cap>0?"$"+cap:"no cap";
+  $("light-v").textContent=fmtTok(light);
+  $("typical-v").textContent=fmtTok(typical);
+  $("heavy-v").textContent=fmtTok(heavy);
+
+  const tiers=[["Light",light],["Typical",typical],["Heavy",heavy]];
+  const tbody=$("tbody");
+  tbody.innerHTML="";
+  tiers.forEach(([name,tok])=>{
+    const b=billFor(seatPrice,tok,price,cap);
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${name}</td><td>${fmtTok(tok)}</td><td>${money(b.usage)}</td><td>${money(b.noCap)}</td><td>${money(b.withCap)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  const heavyBill=billFor(seatPrice,heavy,price,cap);
+  $("o-team-nocap").textContent=money(heavyBill.noCap*people);
+  $("o-team-cap").textContent=money(heavyBill.withCap*people);
+
+  const v=$("o-verdict");
+  const savings=(heavyBill.noCap-heavyBill.withCap)*people;
+  if(cap>0 && savings>0.5){
+    v.className="verdict win";
+    v.textContent=`The cap saves the team ${money(savings)} this month, if everyone is a heavy user.`;
+  } else if(cap>0){
+    v.className="verdict win";
+    v.textContent="At these numbers the cap is not binding. No one is over it yet.";
+  } else {
+    v.className="verdict lose";
+    v.textContent="No cap set. A single heavy user's usage bill is uncapped and can run well past the seat price.";
+  }
+
+  const target=2000;
+  const threshold=price>0?Math.max(0,(target-seatPrice)*1e6/price):Infinity;
+  $("o-threshold").textContent=isFinite(threshold)?fmtTok(threshold)+" tokens/mo":"n/a";
+  $("o-threshold-note").textContent=isFinite(threshold)
+    ? `Formula: tokens = (target bill − seat price) × 1,000,000 ÷ price per million. At your numbers, (${money(target)} − ${money(seatPrice)}) × 1,000,000 ÷ ${money(price)} = ${Math.round(threshold).toLocaleString("en-US")} tokens in a month, from one person.`
+    : "Set an overage price above zero to compute this.";
+}
+calc();
+</script>
+</body>
+</html>

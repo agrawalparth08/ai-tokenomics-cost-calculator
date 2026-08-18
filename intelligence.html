@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Price Per Point of Intelligence Calculator · AI Tokenomics</title>
+<meta name="description" content="A cheaper model is not automatically the better deal. Enter your own capability scores and your own workload, and see cost per point, not just cost per token." />
+<meta property="og:title" content="Price Per Point of Intelligence Calculator · AI Tokenomics" />
+<meta property="og:description" content="The cheapest model per token can be the most expensive model per point of capability. Bring your own scores and find out." />
+<meta property="og:type" content="website" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cobalt:#2F5BEA; --cobalt-deep:#1E40C8; --mint:#10B981; --mint-deep:#0E9F70;
+    --gold:#E0A12B; --coral:#FB4E5B; --paper:#FBFCFE; --surface:#FFFFFF;
+    --ink:#131C30; --muted:#5B6680; --border:#E6EAF2; --grid:rgba(47,91,234,.05);
+    --shadow:0 18px 50px rgba(19,28,48,.10); --shadow-sm:0 6px 18px rgba(19,28,48,.06);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"Hanken Grotesk",system-ui,sans-serif;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:60px 60px;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1120px;margin:0 auto;padding:28px 22px 60px}
+  header{display:flex;align-items:center;gap:14px;margin:8px 0 6px}
+  .brand{font-weight:800;font-size:20px;letter-spacing:-.01em}
+  .brand .ai{color:var(--cobalt)}
+  .pill{margin-left:auto;font-size:12.5px;font-weight:700;color:var(--cobalt-deep);background:rgba(47,91,234,.09);
+    border:1px solid rgba(47,91,234,.18);padding:7px 14px;border-radius:999px}
+  h1{font-family:"Fraunces",serif;font-weight:600;font-size:clamp(28px,4vw,44px);line-height:1.05;margin:18px 0 8px;letter-spacing:-.01em}
+  h1 .hl{color:var(--cobalt)}
+  .sub{color:var(--muted);font-size:16px;max-width:720px;margin:0 0 26px}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:22px}
+  .card h2{font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+  .row{display:grid;grid-template-columns:1fr 120px;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
+  .row:last-child{border-bottom:0}
+  .row label{font-weight:600;font-size:15px}
+  .row label small{display:block;font-weight:500;color:var(--muted);font-size:12.5px;margin-top:2px}
+  .row .val{font-weight:800;font-size:18px;text-align:right;font-variant-numeric:tabular-nums}
+  input[type=range]{width:100%;accent-color:var(--cobalt);margin-top:8px}
+  select,input[type=number]{font:inherit;font-weight:700;padding:8px 10px;border:1.5px solid var(--border);border-radius:10px;width:100%;background:#fff}
+  .note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+  .foot{margin-top:28px;font-size:13px;color:var(--muted);line-height:1.6}
+  .foot a{color:var(--cobalt);font-weight:700;text-decoration:none}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:10px 8px;border-bottom:1px solid var(--border);text-align:right}
+  th:first-child,td:first-child{text-align:left}
+  th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  tr.best td{background:rgba(16,185,129,.07)}
+  tr.worst td{background:rgba(251,78,91,.06)}
+  td input[type=number]{width:80px;text-align:right;padding:6px 8px}
+  .rank{font-weight:800;color:var(--muted)}
+  .rank.win{color:var(--mint-deep)}
+  .verdict{margin-top:16px;padding:14px 16px;border-radius:14px;font-weight:700;font-size:15px;
+    background:rgba(47,91,234,.08);color:var(--cobalt-deep);border:1px solid rgba(47,91,234,.20)}
+  .callout{margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(224,161,43,.10);border:1px solid rgba(224,161,43,.28);font-size:13.5px;color:#8a6415;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="ai">AI</span> Tokenomics</div>
+    <div class="pill">Calculator 7 · price per point of intelligence</div>
+  </header>
+  <h1>Cheapest per token is not the same as <span class="hl">cheapest per point</span>.</h1>
+  <p class="sub">A model that costs less per million tokens can still cost more per unit of work, if it needs more tokens, more retries, or is simply worse at the task and you end up paying a human to fix it. This tool does not tell you which model is smarter, we do not ship benchmark numbers. Enter a capability score you trust, from a benchmark you actually use, and your own workload, and see cost per task and cost per point side by side.</p>
+
+  <div class="card">
+    <h2>Your workload mix, per task</h2>
+    <div class="row"><label>Input tokens per task <small>prompt, context, documents</small><input type="range" id="tin" min="100" max="200000" step="100" value="4000"></label><div class="val" id="tin-v">4,000</div></div>
+    <div class="row"><label>Output tokens per task <small>the answer, code, or generated content</small><input type="range" id="tout" min="50" max="50000" step="50" value="1000"></label><div class="val" id="tout-v">1,000</div></div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h2>Models, prices, and your scores</h2>
+    <div class="callout">Capability score is blank by default. Enter a score you trust, for example from a benchmark you use for this kind of task. We do not ship benchmark numbers here, because a score that fits your workload is worth more than a generic leaderboard number.</div>
+    <div style="overflow-x:auto;margin-top:14px">
+    <table id="tbl">
+      <thead><tr><th>Model</th><th>Input $/M</th><th>Output $/M</th><th>Your score</th><th>Cost / task</th><th>Cost / point</th><th>Rank</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    </div>
+    <div class="verdict" id="o-verdict">Enter at least two scores to rank models by cost per point.</div>
+    <p class="note">Blended cost per task = (input tokens × input price + output tokens × output price) ÷ 1,000,000. Cost per point = cost per task ÷ your score. Lower is better on both. A model can win on cost per task and lose on cost per point, that gap is the whole point of this tool: a cheaper model at a lower score can cost more per point than a pricier model that is disproportionately more capable.</p>
+  </div>
+
+  <p class="foot">Sources: Anthropic pricing docs, anthropic.com, Aug 2026; OpenAI pricing docs, openai.com, Aug 2026; Google AI / Gemini API pricing docs, ai.google.dev, Aug 2026; DeepSeek API docs, api-docs.deepseek.com, Aug 2026; xAI / Grok docs, docs.x.ai, Aug 2026. Prices are list prices, illustrative model, not advice. No benchmark or capability figures are shipped with this tool; scores above are whatever you type in. More calculators: <a href="index.html#truecost">true cost at scale</a>, <a href="index.html#routing">routing</a>, <a href="index.html#margin">margin per customer</a>, <a href="index.html#agents">coding agents</a>, <a href="index.html#caching">prompt caching</a>, <a href="index.html#context">context window tax</a>, <a href="index.html#seat">subscription to seat cost</a>.</p>
+</div>
+<script>
+const MODELS=[
+  {name:"Claude Sonnet 5", pin:2,   pout:10},
+  {name:"Claude Opus 5",   pin:5,   pout:25},
+  {name:"GPT-5.6 Terra",   pin:2,   pout:12},
+  {name:"GPT-5.6 Luna",    pin:0.20,pout:1.20},
+  {name:"GPT-5.6 Sol",     pin:5,   pout:30},
+  {name:"Gemini 3.7 Flash",pin:0.75,pout:3.75},
+  {name:"DeepSeek V4 Flash",pin:0.22,pout:0.66},
+  {name:"Grok 4.6",        pin:2,   pout:6}
+];
+const $=id=>document.getElementById(id);
+const money=n=>{
+  if(!isFinite(n))return "n/a";
+  const abs=Math.abs(n);
+  const d=abs<1?4:2;
+  return (n<0?"-$":"$")+abs.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+};
+
+const tbody=$("tbody");
+MODELS.forEach((m,i)=>{
+  const tr=document.createElement("tr");
+  tr.id="row"+i;
+  tr.innerHTML=`<td>${m.name}</td><td>${money(m.pin)}</td><td>${money(m.pout)}</td>
+    <td><input type="number" id="score${i}" min="0" step="0.1" placeholder="enter score"></td>
+    <td id="cost${i}"></td><td id="cpp${i}"></td><td id="rank${i}" class="rank">-</td>`;
+  tbody.appendChild(tr);
+});
+
+["tin","tout"].forEach(id=>$(id).addEventListener("input",calc));
+document.querySelectorAll('input[type=number][id^="score"]').forEach(el=>el.addEventListener("input",calc));
+
+function calc(){
+  const tin=+$("tin").value, tout=+$("tout").value;
+  $("tin-v").textContent=tin.toLocaleString("en-US");
+  $("tout-v").textContent=tout.toLocaleString("en-US");
+
+  const results=MODELS.map((m,i)=>{
+    const cost=(tin*m.pin+tout*m.pout)/1e6;
+    const score=+($("score"+i).value||0);
+    const hasScore=$("score"+i).value!=="" && score>0;
+    const cpp=hasScore?cost/score:null;
+    $("cost"+i).textContent=money(cost);
+    $("cpp"+i).textContent=hasScore?money(cpp)+" /pt":"-";
+    document.querySelectorAll("#tbl tbody tr").forEach(r=>r.classList.remove("best","worst"));
+    return {i,name:m.name,cost,score,hasScore,cpp};
+  });
+
+  const scored=results.filter(r=>r.hasScore);
+  scored.sort((a,b)=>a.cpp-b.cpp);
+  results.forEach(r=>$("rank"+r.i).textContent="-");
+  results.forEach(r=>$("rank"+r.i).className="rank");
+  scored.forEach((r,idx)=>{
+    $("rank"+r.i).textContent="#"+(idx+1);
+    if(idx===0){$("rank"+r.i).classList.add("win");document.getElementById("row"+r.i).classList.add("best")}
+    if(idx===scored.length-1 && scored.length>1)document.getElementById("row"+r.i).classList.add("worst");
+  });
+
+  const v=$("o-verdict");
+  if(scored.length<2){
+    v.textContent="Enter at least two scores to rank models by cost per point.";
+  } else {
+    const cheapestPerTask=[...results].sort((a,b)=>a.cost-b.cost)[0];
+    const bestPerPoint=scored[0];
+    if(cheapestPerTask.name===bestPerPoint.name){
+      v.textContent=`${bestPerPoint.name} is both the cheapest model per task and the best value per point, at your scores and workload.`;
+    } else {
+      v.textContent=`${cheapestPerTask.name} is cheapest per task at ${money(cheapestPerTask.cost)}, but ${bestPerPoint.name} is the best value per point of capability at ${money(bestPerPoint.cpp)}/pt. A cheaper model at a lower score can cost more per point than a pricier model that is disproportionately more capable.`;
+    }
+  }
+}
+calc();
+</script>
+</body>
+</html>
