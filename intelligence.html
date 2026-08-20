@@ -4,9 +4,9 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Price Per Point of Intelligence Calculator · AI Tokenomics</title>
-<meta name="description" content="A cheaper model is not automatically the better deal. Enter your own capability scores and your own workload, and see cost per point, not just cost per token." />
+<meta name="description" content="What does it actually cost to run your own eval, grade it with a second model, and then compare cost per point across models. Bring your own tasks and your own scores." />
 <meta property="og:title" content="Price Per Point of Intelligence Calculator · AI Tokenomics" />
-<meta property="og:description" content="The cheapest model per token can be the most expensive model per point of capability. Bring your own scores and find out." />
+<meta property="og:description" content="A cheaper model per token is not automatically the cheaper model per point. Price your own eval, price your judge, and bring your own scores." />
 <meta property="og:type" content="website" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -34,6 +34,7 @@
   .sub{color:var(--muted);font-size:16px;max-width:720px;margin:0 0 26px}
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:22px}
   .card h2{font-size:14px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 14px}
+  .card h2 small{display:block;text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted);font-size:13px;margin-top:4px}
   .row{display:grid;grid-template-columns:1fr 120px;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--border)}
   .row:last-child{border-bottom:0}
   .row label{font-weight:600;font-size:15px}
@@ -50,12 +51,26 @@
   th{font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:700}
   tr.best td{background:rgba(16,185,129,.07)}
   tr.worst td{background:rgba(251,78,91,.06)}
-  td input[type=number]{width:80px;text-align:right;padding:6px 8px}
+  td input[type=number]{width:76px;text-align:right;padding:6px 8px}
   .rank{font-weight:800;color:var(--muted)}
   .rank.win{color:var(--mint-deep)}
   .verdict{margin-top:16px;padding:14px 16px;border-radius:14px;font-weight:700;font-size:15px;
     background:rgba(47,91,234,.08);color:var(--cobalt-deep);border:1px solid rgba(47,91,234,.20)}
   .callout{margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(224,161,43,.10);border:1px solid rgba(224,161,43,.28);font-size:13.5px;color:#8a6415;line-height:1.5}
+  .callout.blue{background:rgba(47,91,234,.08);border-color:rgba(47,91,234,.22);color:var(--cobalt-deep)}
+  .checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin:6px 0 4px}
+  .chk{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1.5px solid var(--border);border-radius:10px;font-size:13.5px;font-weight:600;cursor:pointer}
+  .chk input{width:16px;height:16px;accent-color:var(--cobalt);margin:0}
+  .chk small{color:var(--muted);font-weight:500}
+  .big{font-family:"Fraunces",serif;font-weight:600;font-size:44px;line-height:1;letter-spacing:-.02em;margin:6px 0 2px;color:var(--cobalt)}
+  .hm-num{font-size:.5em;font-weight:600;color:var(--muted);margin-left:8px;vertical-align:middle}
+  .lab{font-size:13px;color:var(--muted);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+  .working{margin-top:14px;font-size:13.5px;color:var(--muted);line-height:1.7;background:var(--paper);border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+  .working b{color:var(--ink)}
+  .split{display:grid;grid-template-columns:1.15fr 1fr;gap:22px;align-items:start}
+  @media(max-width:960px){.split{grid-template-columns:1fr}}
+  .custom-row{display:none}
+  .custom-row.show{display:grid}
 </style>
 </head>
 <body>
@@ -64,86 +79,255 @@
     <div class="brand"><span class="ai">AI</span> Tokenomics</div>
     <div class="pill">Calculator 7 · price per point of intelligence</div>
   </header>
-  <h1>Cheapest per token is not the same as <span class="hl">cheapest per point</span>.</h1>
-  <p class="sub">A model that costs less per million tokens can still cost more per unit of work, if it needs more tokens, more retries, or is simply worse at the task and you end up paying a human to fix it. This tool does not tell you which model is smarter, we do not ship benchmark numbers. Enter a capability score you trust, from a benchmark you actually use, and your own workload, and see cost per task and cost per point side by side.</p>
+  <h1>What does it cost to actually <span class="hl">find out</span> which model is smarter?</h1>
+  <p class="sub">Before you can price a point of intelligence, you have to run the eval that produces the score. This page prices your own eval, prices a second model to grade it, and then lets you compare cost per point across models using scores you trust, not a leaderboard number.</p>
 
   <div class="card">
-    <h2>Your workload mix, per task</h2>
-    <div class="row"><label>Input tokens per task <small>prompt, context, documents</small><input type="range" id="tin" min="100" max="200000" step="100" value="4000"></label><div class="val" id="tin-v">4,000</div></div>
-    <div class="row"><label>Output tokens per task <small>the answer, code, or generated content</small><input type="range" id="tout" min="50" max="50000" step="50" value="1000"></label><div class="val" id="tout-v">1,000</div></div>
+    <h2>1. What running your own eval costs</h2>
+    <div class="row"><label>Test tasks <small>how many questions or cases are in your eval set</small><input type="range" id="tasks" min="1" max="500" step="1" value="60"></label><div class="val" id="tasks-v">60</div></div>
+    <div class="row"><label>Input tokens per task <small>illustrative default, prompt plus context for one task</small><input type="range" id="etin" min="100" max="50000" step="100" value="3000"></label><div class="val" id="etin-v">3,000</div></div>
+    <div class="row"><label>Output tokens per task <small>illustrative default, the model's answer</small><input type="range" id="etout" min="50" max="10000" step="50" value="700"></label><div class="val" id="etout-v">700</div></div>
+    <div class="row"><label>Runs per model <small>how many times you repeat each task, to average out noise</small><input type="range" id="runs" min="1" max="10" step="1" value="3"></label><div class="val" id="runs-v">3</div></div>
+
+    <div class="note" style="margin-top:14px;margin-bottom:6px">Models in this eval. Pick as many as you want to compare.</div>
+    <div class="checks" id="checks"></div>
+
+    <div class="big" id="eval-total">$0.00</div>
+    <div class="note" id="eval-total-note"></div>
+
+    <div style="overflow-x:auto;margin-top:14px">
+    <table id="etbl">
+      <thead><tr><th>Model</th><th>Input $/M</th><th>Output $/M</th><th>Cost for this eval</th></tr></thead>
+      <tbody id="etbody"></tbody>
+    </table>
+    </div>
+    <div class="working" id="eval-working"></div>
   </div>
 
   <div class="card" style="margin-top:18px">
-    <h2>Models, prices, and your scores</h2>
-    <div class="callout">Capability score is blank by default. Enter a score you trust, for example from a benchmark you use for this kind of task. We do not ship benchmark numbers here, because a score that fits your workload is worth more than a generic leaderboard number.</div>
+    <h2>2. LLM as a judge<small>Pay a second model to grade the first model's answers against your pass rule, then spot check the judge yourself.</small></h2>
+    <div class="split">
+      <div>
+        <div class="row"><label>Judge model</label>
+          <select id="judgeModel"></select>
+        </div>
+        <div class="custom-row" id="judgeCustomRow"><label>Custom judge input $/M</label><input type="number" id="judgeCustomIn" step="0.01" value="2"></div>
+        <div class="custom-row" id="judgeCustomOutRow"><label>Custom judge output $/M</label><input type="number" id="judgeCustomOut" step="0.01" value="10"></div>
+        <div class="row"><label>Judge tokens in, per grading <small>illustrative default, the task, the answer, and your pass rule</small><input type="range" id="jtin" min="100" max="20000" step="50" value="1500"></label><div class="val" id="jtin-v">1,500</div></div>
+        <div class="row"><label>Judge tokens out, per grading <small>illustrative default, the verdict plus a short reason</small><input type="range" id="jtout" min="10" max="2000" step="10" value="100"></label><div class="val" id="jtout-v">100</div></div>
+        <div class="callout">Graded answers = test tasks × runs per model, from panel 1 above, once per model you are judging. Right now that is <b id="jt-count">180</b> graded answers per model.</div>
+      </div>
+      <div>
+        <div class="lab">judge cost, one model's worth of answers</div>
+        <div class="big" id="judge-total" style="font-size:36px">$0.00</div>
+        <div class="note" id="judge-per-answer"></div>
+        <div class="callout blue">Do not trust the judge blindly. Pull a random sample of its verdicts, read them yourself, and confirm the judge is actually applying your pass rule and not just rewarding longer or more confident-sounding answers.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <h2>3. Cost per point of intelligence</h2>
+    <div class="callout">Capability score is blank by default. Enter a score you trust, for example your own pass rate from the eval above, on a 0 to 100 scale, or a benchmark you use for this kind of task. We do not ship benchmark numbers here, because a score that fits your workload is worth more than a generic leaderboard number.</div>
+    <div class="row"><label>Use pass rates from your eval as the score <small>optional: check this to auto fill scores as % of tasks passed, then edit any of them</small></label>
+      <input type="checkbox" id="usePassRate" style="width:20px;height:20px;accent-color:var(--cobalt)">
+    </div>
     <div style="overflow-x:auto;margin-top:14px">
     <table id="tbl">
-      <thead><tr><th>Model</th><th>Input $/M</th><th>Output $/M</th><th>Your score</th><th>Cost / task</th><th>Cost / point</th><th>Rank</th></tr></thead>
+      <thead><tr><th>Model</th><th>Input $/M</th><th>Output $/M</th><th>Tasks passed, of <span id="ptasks">60</span></th><th>Your score</th><th>Cost / task</th><th>Cost / point</th><th>Rank</th></tr></thead>
       <tbody id="tbody"></tbody>
     </table>
     </div>
     <div class="verdict" id="o-verdict">Enter at least two scores to rank models by cost per point.</div>
-    <p class="note">Blended cost per task = (input tokens × input price + output tokens × output price) ÷ 1,000,000. Cost per point = cost per task ÷ your score. Lower is better on both. A model can win on cost per task and lose on cost per point, that gap is the whole point of this tool: a cheaper model at a lower score can cost more per point than a pricier model that is disproportionately more capable.</p>
+    <p class="note">Blended cost per task uses the same workload as the eval panel above: input tokens × input price + output tokens × output price, divided by 1,000,000. Cost per point = cost per task ÷ your score. Lower is better on both. A model can win on cost per task and lose on cost per point, that gap is the whole point of this tool: a cheaper model at a lower score can cost more per point than a pricier model that is disproportionately more capable.</p>
   </div>
 
-  <p class="foot">Sources: Anthropic pricing docs, anthropic.com, Aug 2026; OpenAI pricing docs, openai.com, Aug 2026; Google AI / Gemini API pricing docs, ai.google.dev, Aug 2026; DeepSeek API docs, api-docs.deepseek.com, Aug 2026; xAI / Grok docs, docs.x.ai, Aug 2026. Prices are list prices, illustrative model, not advice. No benchmark or capability figures are shipped with this tool; scores above are whatever you type in. More calculators: <a href="index.html#truecost">true cost at scale</a>, <a href="index.html#routing">routing</a>, <a href="index.html#margin">margin per customer</a>, <a href="index.html#agents">coding agents</a>, <a href="index.html#caching">prompt caching</a>, <a href="index.html#context">context window tax</a>, <a href="index.html#seat">subscription to seat cost</a>.</p>
+  <p class="foot">Sources: Anthropic pricing docs, anthropic.com, Aug 2026; OpenAI pricing docs, openai.com, Aug 2026; Google AI / Gemini API pricing docs, ai.google.dev, Aug 2026; DeepSeek API docs, api-docs.deepseek.com, Aug 2026; xAI / Grok docs, docs.x.ai, Aug 2026. Prices are list prices, illustrative model, not advice. No benchmark or capability figures are shipped with this tool; scores and pass rates above are whatever you enter. More calculators: <a href="index.html#truecost">true cost at scale</a>, <a href="index.html#routing">routing</a>, <a href="index.html#margin">margin per customer</a>, <a href="index.html#agents">coding agents</a>, <a href="index.html#caching">prompt caching</a>, <a href="index.html#context">context window tax</a>, <a href="index.html#seat">subscription to seat cost</a>.</p>
 </div>
 <script>
 const MODELS=[
-  {name:"Claude Sonnet 5", pin:2,   pout:10},
-  {name:"Claude Opus 5",   pin:5,   pout:25},
-  {name:"GPT-5.6 Terra",   pin:2,   pout:12},
-  {name:"GPT-5.6 Luna",    pin:0.20,pout:1.20},
-  {name:"GPT-5.6 Sol",     pin:5,   pout:30},
-  {name:"Gemini 3.7 Flash",pin:0.75,pout:3.75},
-  {name:"DeepSeek V4 Flash",pin:0.22,pout:0.66},
-  {name:"Grok 4.6",        pin:2,   pout:6}
+  {key:"sonnet",  name:"Claude Sonnet 5",  pin:2,   pout:10, def:true},
+  {key:"opus",    name:"Claude Opus 5",    pin:5,   pout:25, def:false},
+  {key:"sol",     name:"GPT-5.6 Sol",      pin:5,   pout:30, def:false},
+  {key:"terra",   name:"GPT-5.6 Terra",    pin:2,   pout:12, def:false},
+  {key:"luna",    name:"GPT-5.6 Luna",     pin:0.20,pout:1.20, def:true},
+  {key:"gemini",  name:"Gemini 3.7 Flash", pin:0.75,pout:3.75, def:false},
+  {key:"deepseek",name:"DeepSeek V4 Flash",pin:0.22,pout:0.66, def:true},
+  {key:"grok",    name:"Grok 4.6",         pin:2,   pout:6,  def:false},
+  {key:"custom",  name:"Custom",           pin:2,   pout:10, def:false, custom:true}
 ];
 const $=id=>document.getElementById(id);
-const money=n=>{
+
+// ---------- money, in plain words first, numeric small beside it ----------
+function moneyNumeric(n){
   if(!isFinite(n))return "n/a";
   const abs=Math.abs(n);
-  const d=abs<1?4:2;
+  const d=abs<0.001?6:(abs<1?4:2);
   return (n<0?"-$":"$")+abs.toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
-};
+}
+function moneyWords(n){
+  if(!isFinite(n))return "not available";
+  if(n===0)return "nothing";
+  const neg=n<0; n=Math.abs(n);
+  let phrase;
+  if(n>=1){
+    const dollars=Math.floor(n);
+    const cents=Math.round((n-dollars)*100);
+    phrase = dollars+" dollar"+(dollars===1?"":"s");
+    if(cents>0) phrase += " and "+cents+" cent"+(cents===1?"":"s");
+  } else if(n>=0.01){
+    let c=Math.round(n*1000)/10;
+    if(Number.isInteger(c)) phrase=c+" cent"+(c===1?"":"s");
+    else phrase=c.toFixed(1)+" cents";
+  } else if(n>=0.001){
+    const t=Math.round(n*1000);
+    phrase = t===1?"a tenth of a cent":t+" tenths of a cent";
+  } else if(n>=0.0001){
+    const h=Math.round(n*10000);
+    phrase = h===1?"a hundredth of a cent":h+" hundredths of a cent";
+  } else if(n>0){
+    const th=Math.round(n*100000);
+    phrase = th===1?"a thousandth of a cent":th+" thousandths of a cent";
+  } else phrase="nothing";
+  return (neg?"minus ":"")+phrase;
+}
+function human(n){
+  return moneyWords(n)+`<span class="hm-num">${moneyNumeric(n)}</span>`;
+}
 
-const tbody=$("tbody");
-MODELS.forEach((m,i)=>{
-  const tr=document.createElement("tr");
-  tr.id="row"+i;
-  tr.innerHTML=`<td>${m.name}</td><td>${money(m.pin)}</td><td>${money(m.pout)}</td>
-    <td><input type="number" id="score${i}" min="0" step="0.1" placeholder="enter score"></td>
-    <td id="cost${i}"></td><td id="cpp${i}"></td><td id="rank${i}" class="rank">-</td>`;
-  tbody.appendChild(tr);
+// ---------- panel 1: eval cost ----------
+const checksWrap=$("checks");
+MODELS.filter(m=>!m.custom).forEach(m=>{
+  const lab=document.createElement("label");
+  lab.className="chk";
+  lab.innerHTML=`<input type="checkbox" data-key="${m.key}" ${m.def?"checked":""}><span>${m.name} <small>${moneyNumeric(m.pin)}/${moneyNumeric(m.pout)} per M</small></span>`;
+  checksWrap.appendChild(lab);
 });
 
-["tin","tout"].forEach(id=>$(id).addEventListener("input",calc));
-document.querySelectorAll('input[type=number][id^="score"]').forEach(el=>el.addEventListener("input",calc));
+function selectedModels(){
+  const keys=[...checksWrap.querySelectorAll('input[type=checkbox]:checked')].map(c=>c.dataset.key);
+  return MODELS.filter(m=>keys.includes(m.key));
+}
 
-function calc(){
-  const tin=+$("tin").value, tout=+$("tout").value;
-  $("tin-v").textContent=tin.toLocaleString("en-US");
-  $("tout-v").textContent=tout.toLocaleString("en-US");
+function evalCalc(){
+  const tasks=+$("tasks").value, tin=+$("etin").value, tout=+$("etout").value, runs=+$("runs").value;
+  $("tasks-v").textContent=tasks; $("etin-v").textContent=tin.toLocaleString("en-US");
+  $("etout-v").textContent=tout.toLocaleString("en-US"); $("runs-v").textContent=runs;
+  $("ptasks").textContent=tasks;
 
-  const results=MODELS.map((m,i)=>{
-    const cost=(tin*m.pin+tout*m.pout)/1e6;
-    const score=+($("score"+i).value||0);
-    const hasScore=$("score"+i).value!=="" && score>0;
-    const cpp=hasScore?cost/score:null;
-    $("cost"+i).textContent=money(cost);
-    $("cpp"+i).textContent=hasScore?money(cpp)+" /pt":"-";
-    document.querySelectorAll("#tbl tbody tr").forEach(r=>r.classList.remove("best","worst"));
-    return {i,name:m.name,cost,score,hasScore,cpp};
+  const sel=selectedModels();
+  const etbody=$("etbody"); etbody.innerHTML="";
+  let total=0;
+  const rows=[];
+  sel.forEach(m=>{
+    const perCall=(tin*m.pin+tout*m.pout)/1e6;
+    const cost=perCall*tasks*runs;
+    total+=cost;
+    rows.push({m,cost,perCall});
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${m.name}</td><td>${moneyNumeric(m.pin)}</td><td>${moneyNumeric(m.pout)}</td><td>${human(cost)}</td>`;
+    etbody.appendChild(tr);
   });
 
+  $("eval-total").innerHTML=human(total);
+  $("eval-total-note").textContent = sel.length===0
+    ? "Pick at least one model above."
+    : `Total to run this eval once across ${sel.length} model${sel.length===1?"":"s"}: ${tasks} tasks × ${runs} runs each, ${tin.toLocaleString("en-US")} input and ${tout.toLocaleString("en-US")} output tokens per task.`;
+
+  let working = rows.map(r=>{
+    return `<b>${r.m.name}</b>: ${tasks} tasks × ${runs} runs = ${tasks*runs} calls. Each call is ${tin.toLocaleString("en-US")} input tokens at ${moneyNumeric(r.m.pin)} per million, plus ${tout.toLocaleString("en-US")} output tokens at ${moneyNumeric(r.m.pout)} per million, which is ${moneyNumeric(r.perCall)} per call. ${tasks*runs} calls costs ${moneyWords(r.cost)} (${moneyNumeric(r.cost)}).`;
+  }).join("<br><br>");
+  $("eval-working").innerHTML = working || "Pick a model to see the working.";
+
+  return {tasks,tin,tout,runs,sel,rows,total};
+}
+
+// ---------- panel 2: judge ----------
+const judgeSel=$("judgeModel");
+MODELS.forEach(m=>{
+  const o=document.createElement("option");
+  o.value=m.key; o.textContent=m.custom?"Custom":`${m.name} (${moneyNumeric(m.pin)}/${moneyNumeric(m.pout)} per M)`;
+  judgeSel.appendChild(o);
+});
+judgeSel.value="sonnet";
+
+function judgeModel(){
+  const key=judgeSel.value;
+  const m=MODELS.find(x=>x.key===key);
+  if(m.custom) return {name:"Custom judge", pin:+$("judgeCustomIn").value, pout:+$("judgeCustomOut").value};
+  return m;
+}
+
+function judgeCalc(state){
+  const isCustom=judgeSel.value==="custom";
+  $("judgeCustomRow").classList.toggle("show",isCustom);
+  $("judgeCustomOutRow").classList.toggle("show",isCustom);
+
+  const jtin=+$("jtin").value, jtout=+$("jtout").value;
+  $("jtin-v").textContent=jtin.toLocaleString("en-US");
+  $("jtout-v").textContent=jtout.toLocaleString("en-US");
+
+  const gradedPerModel=state.tasks*state.runs;
+  $("jt-count").textContent=gradedPerModel.toLocaleString("en-US");
+
+  const jm=judgeModel();
+  const perAnswer=(jtin*jm.pin+jtout*jm.pout)/1e6;
+  const total=perAnswer*gradedPerModel;
+
+  $("judge-total").innerHTML=human(total);
+  $("judge-per-answer").innerHTML = `That works out to ${human(perAnswer)} per graded answer, using ${jm.name} as the judge: ${jtin.toLocaleString("en-US")} input tokens at ${moneyNumeric(jm.pin)}/M plus ${jtout.toLocaleString("en-US")} output tokens at ${moneyNumeric(jm.pout)}/M, divided by one million. Multiply by ${gradedPerModel.toLocaleString("en-US")} graded answers to grade one model's whole run, or by ${(gradedPerModel*Math.max(state.sel.length,1)).toLocaleString("en-US")} to grade every model in panel 1.`;
+}
+
+// ---------- panel 3: cost per point ----------
+const tbody=$("tbody");
+function buildScoreTable(sel){
+  tbody.innerHTML="";
+  sel.forEach(m=>{
+    const tr=document.createElement("tr");
+    tr.id="row-"+m.key;
+    tr.innerHTML=`<td>${m.name}</td><td>${moneyNumeric(m.pin)}</td><td>${moneyNumeric(m.pout)}</td>
+      <td><input type="number" id="pass-${m.key}" min="0" placeholder="0"></td>
+      <td><input type="number" id="score-${m.key}" min="0" step="0.1" placeholder="enter score"></td>
+      <td id="cost-${m.key}"></td><td id="cpp-${m.key}"></td><td id="rank-${m.key}" class="rank">-</td>`;
+    tbody.appendChild(tr);
+  });
+}
+let lastKeys="";
+
+function scoreCalc(state){
+  const keys=state.sel.map(m=>m.key).join(",");
+  if(keys!==lastKeys){ buildScoreTable(state.sel); lastKeys=keys; wireScoreInputs(); }
+
+  const usePassRate=$("usePassRate").checked;
+  document.querySelectorAll('#tbl input[id^="pass-"]').forEach(el=>el.disabled=!usePassRate);
+
+  const results=state.sel.map(m=>{
+    const cost=state.rows.find(r=>r.m.key===m.key)?.perCall ?? (state.tin*m.pin+state.tout*m.pout)/1e6;
+    let score;
+    if(usePassRate){
+      const passed=+($("pass-"+m.key).value||0);
+      score=state.tasks>0?(passed/state.tasks)*100:0;
+      $("score-"+m.key).value=score?score.toFixed(1):"";
+      $("score-"+m.key).disabled=true;
+    } else {
+      $("score-"+m.key).disabled=false;
+    }
+    const scoreVal=+($("score-"+m.key).value||0);
+    const hasScore=$("score-"+m.key).value!=="" && scoreVal>0;
+    const cpp=hasScore?cost/scoreVal:null;
+    $("cost-"+m.key).innerHTML=human(cost);
+    $("cpp-"+m.key).innerHTML=hasScore?human(cpp)+" <span style='font-size:11px;color:var(--muted)'>/pt</span>":"-";
+    return {key:m.key,name:m.name,cost,score:scoreVal,hasScore,cpp};
+  });
+
+  document.querySelectorAll("#tbl tbody tr").forEach(r=>r.classList.remove("best","worst"));
   const scored=results.filter(r=>r.hasScore);
   scored.sort((a,b)=>a.cpp-b.cpp);
-  results.forEach(r=>$("rank"+r.i).textContent="-");
-  results.forEach(r=>$("rank"+r.i).className="rank");
+  results.forEach(r=>{ $("rank-"+r.key).textContent="-"; $("rank-"+r.key).className="rank"; });
   scored.forEach((r,idx)=>{
-    $("rank"+r.i).textContent="#"+(idx+1);
-    if(idx===0){$("rank"+r.i).classList.add("win");document.getElementById("row"+r.i).classList.add("best")}
-    if(idx===scored.length-1 && scored.length>1)document.getElementById("row"+r.i).classList.add("worst");
+    $("rank-"+r.key).textContent="#"+(idx+1);
+    if(idx===0){$("rank-"+r.key).classList.add("win");document.getElementById("row-"+r.key).classList.add("best")}
+    if(idx===scored.length-1 && scored.length>1)document.getElementById("row-"+r.key).classList.add("worst");
   });
 
   const v=$("o-verdict");
@@ -155,11 +339,32 @@ function calc(){
     if(cheapestPerTask.name===bestPerPoint.name){
       v.textContent=`${bestPerPoint.name} is both the cheapest model per task and the best value per point, at your scores and workload.`;
     } else {
-      v.textContent=`${cheapestPerTask.name} is cheapest per task at ${money(cheapestPerTask.cost)}, but ${bestPerPoint.name} is the best value per point of capability at ${money(bestPerPoint.cpp)}/pt. A cheaper model at a lower score can cost more per point than a pricier model that is disproportionately more capable.`;
+      v.innerHTML=`${cheapestPerTask.name} is cheapest per task at ${human(cheapestPerTask.cost)}, but ${bestPerPoint.name} is the best value per point of capability at ${human(bestPerPoint.cpp)}/pt. A cheaper model at a lower score can cost more per point than a pricier model that is disproportionately more capable.`;
     }
   }
 }
-calc();
+
+function wireScoreInputs(){
+  document.querySelectorAll('#tbl input[type=number]').forEach(el=>{
+    el.addEventListener("input",calcAll);
+  });
+}
+
+function calcAll(){
+  const state=evalCalc();
+  judgeCalc(state);
+  scoreCalc(state);
+}
+
+["tasks","etin","etout","runs"].forEach(id=>$(id).addEventListener("input",calcAll));
+checksWrap.querySelectorAll('input[type=checkbox]').forEach(el=>el.addEventListener("input",calcAll));
+["judgeModel","jtin","jtout","judgeCustomIn","judgeCustomOut"].forEach(id=>{
+  $(id).addEventListener("input",calcAll);
+  $(id).addEventListener("change",calcAll);
+});
+$("usePassRate").addEventListener("input",calcAll);
+
+calcAll();
 </script>
 </body>
 </html>
